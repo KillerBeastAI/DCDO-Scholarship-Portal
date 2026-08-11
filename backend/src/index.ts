@@ -68,15 +68,15 @@ app.get('/api/v1', (_req, res) => {
   });
 });
 
-app.use('/api/v1/auth', authRouter);
-app.use('/api/v1/users', userRouter);
-app.use('/api/v1/training-providers', providerRouter);
-app.use('/api/v1/scholarship-programs', programRouter);
-app.use('/api/v1/qualification-maps', qmRouter);
-app.use('/api/v1/accomplishments', accomplishmentRouter);
-app.use('/api/v1/billings', billingRouter);
-app.use('/api/v1/dashboard', dashboardRouter);
-app.use('/api/docs', swaggerRouter);
+app.use(['/api/v1/auth', '/v1/auth'], authRouter);
+app.use(['/api/v1/users', '/v1/users'], userRouter);
+app.use(['/api/v1/training-providers', '/v1/training-providers'], providerRouter);
+app.use(['/api/v1/scholarship-programs', '/v1/scholarship-programs'], programRouter);
+app.use(['/api/v1/qualification-maps', '/v1/qualification-maps'], qmRouter);
+app.use(['/api/v1/accomplishments', '/v1/accomplishments'], accomplishmentRouter);
+app.use(['/api/v1/billings', '/v1/billings'], billingRouter);
+app.use(['/api/v1/dashboard', '/v1/dashboard'], dashboardRouter);
+app.use(['/api/docs', '/docs'], swaggerRouter);
 
 // ── 404 catch-all ───────────────────────────────────────────
 app.use((_req, res) => {
