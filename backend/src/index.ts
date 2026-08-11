@@ -102,8 +102,8 @@ async function start(): Promise<void> {
   }
 }
 
-// Start server if not running inside Jest test
-if (process.env.NODE_ENV !== 'test') {
+// Start server if not running inside Jest test or Vercel serverless environment
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   start();
 }
 
