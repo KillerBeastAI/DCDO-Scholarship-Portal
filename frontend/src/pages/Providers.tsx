@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import type { TrainingProvider, ProviderStatus } from '../types';
+import type { TrainingProvider } from '../types';
 import { AIImportModal } from '../components/AIImportModal';
 import './Providers.css';
 
