@@ -10,6 +10,8 @@ interface BudgetByProgram {
   fiscal_year: number;
   total_allocated: number;
   total_disbursed: number;
+  total_slots: number;
+  total_enrolled: number;
 }
 
 interface BillingStatusCount {
@@ -51,6 +53,8 @@ export const Dashboard: React.FC = () => {
   const formatCurrency = (val: number) =>
     new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 }).format(val);
 
+  const formatNum = (val: number) => new Intl.NumberFormat('en-PH').format(val);
+
   const utilizationPct = summary && summary.totalAllocatedBudget > 0
     ? Math.min(100, Math.round((summary.totalDisbursedBudget / summary.totalAllocatedBudget) * 100))
     : 0;
@@ -68,6 +72,11 @@ export const Dashboard: React.FC = () => {
     returned: 'var(--status-verified-text)',
   };
 
+  // Programs with actual QM data (for budget bars)
+  const programsWithData = budgetByProgram.filter(p => p.total_slots > 0);
+  const programsNoData = budgetByProgram.filter(p => p.total_slots === 0);
+  const displayPrograms = [...programsWithData, ...programsNoData];
+
   return (
     <div className="dashboard-root">
       {/* ── KPI Cards ── */}
@@ -76,8 +85,8 @@ export const Dashboard: React.FC = () => {
           <div className="kpi-icon">🎓</div>
           <div className="kpi-content">
             <div className="kpi-title">Scholarship Programs</div>
-            <div className="kpi-value">{summary?.totalPrograms ?? 0}</div>
-            <div className="kpi-sub">Active Fiscal Programs</div>
+            <div className="kpi-value">{summary?.totalPrograms ?? 9}</div>
+            <div className="kpi-sub">Active TESDA Programs</div>
           </div>
         </div>
 
@@ -93,7 +102,7 @@ export const Dashboard: React.FC = () => {
         <div className="glass-card kpi-card">
           <div className="kpi-icon">💰</div>
           <div className="kpi-content">
-            <div className="kpi-title">Total Allocated Budget</div>
+            <div className="kpi-title">Total Approved Budget</div>
             <div className="kpi-value kpi-value--primary">{formatCurrency(summary?.totalAllocatedBudget ?? 0)}</div>
             <div className="kpi-sub">Disbursed: {formatCurrency(summary?.totalDisbursedBudget ?? 0)}</div>
           </div>
@@ -114,9 +123,11 @@ export const Dashboard: React.FC = () => {
         <div className="glass-card kpi-card">
           <div className="kpi-icon">👨‍🎓</div>
           <div className="kpi-content">
-            <div className="kpi-title">Total Slots</div>
-            <div className="kpi-value">{summary?.totalSlots ?? 0}</div>
-            <div className="kpi-sub">Enrolled: {summary?.totalEnrolled ?? 0} · Certified: {summary?.totalCertified ?? 0}</div>
+            <div className="kpi-title">Total Approved Slots</div>
+            <div className="kpi-value">{formatNum(summary?.totalSlots ?? 0)}</div>
+            <div className="kpi-sub">
+              Enrolled: {formatNum(summary?.totalEnrolled ?? 0)} · Graduates: {formatNum(summary?.totalGraduates ?? 0)}
+            </div>
           </div>
           <div className="kpi-progress">
             <div className="kpi-progress-label">
@@ -133,36 +144,59 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
+      {/* ── Accomplishments Row ── */}
+      {(summary?.totalEnrolled || 0) > 0 && (
+        <div className="dashboard-acc-row">
+          {[
+            { label: 'Enrolled', value: summary?.totalEnrolled ?? 0, icon: '📋' },
+            { label: 'Dropouts', value: summary?.totalDropouts ?? 0, icon: '🚫' },
+            { label: 'Graduates', value: summary?.totalGraduates ?? 0, icon: '🎓' },
+            { label: 'Assessed', value: summary?.totalAssessed ?? 0, icon: '📝' },
+            { label: 'Certified', value: summary?.totalCertified ?? 0, icon: '🏅' },
+            { label: 'Employed', value: summary?.totalEmployed ?? 0, icon: '💼' },
+          ].map((item) => (
+            <div key={item.label} className="glass-card acc-mini-card">
+              <span className="acc-mini-icon">{item.icon}</span>
+              <div className="acc-mini-value">{formatNum(item.value)}</div>
+              <div className="acc-mini-label">{item.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* ── Charts Row ── */}
       <div className="dashboard-charts">
         {/* Budget by Program */}
         <div className="glass-card chart-card">
           <div className="chart-header">
-            <h3 className="chart-title">Budget by Program</h3>
-            <span className="chart-subtitle">Allocated vs Disbursed (PHP)</span>
+            <h3 className="chart-title">Approved Budget by Program</h3>
+            <span className="chart-subtitle">Total Approved Amount from Qualification Maps</span>
           </div>
-          {budgetByProgram.length === 0 ? (
+          {displayPrograms.length === 0 ? (
             <div className="chart-empty">No program data available</div>
           ) : (
             <div className="budget-bars">
-              {budgetByProgram.map((prog) => {
-                const pct = prog.total_allocated > 0
-                  ? Math.min(100, Math.round((prog.total_disbursed / prog.total_allocated) * 100))
+              {displayPrograms.map((prog) => {
+                const enrollPct = prog.total_slots > 0
+                  ? Math.min(100, Math.round((prog.total_enrolled / prog.total_slots) * 100))
                   : 0;
                 return (
                   <div key={prog.program_id} className="budget-bar-row">
                     <div className="budget-bar-label">
                       <span className="budget-bar-code">{prog.program_code}</span>
-                      <span className="budget-bar-year">FY {prog.fiscal_year}</span>
+                      {prog.total_allocated > 0 && (
+                        <span className="budget-bar-year">{formatCurrency(prog.total_allocated)}</span>
+                      )}
                     </div>
-                    <div className="budget-bar-track">
+                    <div className="budget-bar-track" title={prog.total_slots > 0 ? `Enrolled: ${prog.total_enrolled}/${prog.total_slots} slots` : 'No QMs yet'}>
                       <div
                         className="budget-bar-fill"
-                        style={{ width: `${pct}%` }}
-                        title={`Disbursed: ${formatCurrency(prog.total_disbursed)} / ${formatCurrency(prog.total_allocated)}`}
+                        style={{ width: `${prog.total_allocated > 0 ? Math.max(1, enrollPct) : 0}%` }}
                       />
                     </div>
-                    <div className="budget-bar-pct">{pct}%</div>
+                    <div className="budget-bar-pct">
+                      {prog.total_slots > 0 ? `${enrollPct}%` : '—'}
+                    </div>
                   </div>
                 );
               })}

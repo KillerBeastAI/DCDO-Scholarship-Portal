@@ -289,3 +289,57 @@
   text-align: right;
   min-width: 90px;
 }
+
+/* ── Accomplishments Summary Mini-Cards ── */
+.dashboard-acc-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .dashboard-acc-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .dashboard-acc-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.acc-mini-card {
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.acc-mini-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.acc-mini-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.acc-mini-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.1;
+}
+
+.acc-mini-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

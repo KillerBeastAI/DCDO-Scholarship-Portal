@@ -141,7 +141,11 @@ export interface DashboardSummary {
   totalDisbursedBudget: number;
   totalSlots: number;
   totalEnrolled: number;
+  totalGraduates?: number;
   totalCertified: number;
+  totalAssessed?: number;
+  totalDropouts?: number;
+  totalEmployed?: number;
   billingsPending: number;
   billingsVerified: number;
   billingsPaid: number;
