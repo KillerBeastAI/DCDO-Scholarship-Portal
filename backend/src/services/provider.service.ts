@@ -69,6 +69,24 @@ export class ProviderService {
     }
   }
 
+  static async bulkDeleteProviders(ids: string[]): Promise<number> {
+    if (!ids || !ids.length) {
+      const err = new Error('No provider IDs provided for deletion') as Error & { statusCode?: number };
+      err.statusCode = 400;
+      throw err;
+    }
+    try {
+      return await ProviderModel.bulkDelete(ids);
+    } catch (err: any) {
+      if (err.code === '23503') {
+        const error = new Error('Cannot delete some training providers because other records still depend on them.') as Error & { statusCode?: number };
+        error.statusCode = 400;
+        throw error;
+      }
+      throw err;
+    }
+  }
+
   static async bulkCreate(rows: Record<string, any>[]) {
     return ProviderModel.bulkCreate(rows);
   }

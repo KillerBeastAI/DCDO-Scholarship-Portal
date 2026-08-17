@@ -15,6 +15,8 @@ export const Providers: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAIImport, setShowAIImport] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const emptyForm = {
     institution_name: '',
@@ -53,7 +55,45 @@ export const Providers: React.FC = () => {
 
   useEffect(() => {
     fetchProviders();
+    setSelectedIds([]);
   }, [search, statusFilter]);
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const isAllSelected = providers.length > 0 && providers.every((p) => selectedIds.includes(p.provider_id));
+  const isSomeSelected = selectedIds.length > 0 && !isAllSelected;
+
+  const handleToggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(providers.map((p) => p.provider_id));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!selectedIds.length) return;
+    const confirmMsg =
+      selectedIds.length === 1
+        ? 'Are you sure you want to delete this 1 selected training provider?'
+        : `Are you sure you want to delete these ${selectedIds.length} selected training providers?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    setBulkDeleting(true);
+    try {
+      await api.post('/training-providers/bulk-delete', { ids: selectedIds });
+      setSelectedIds([]);
+      await fetchProviders();
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Failed to delete training providers');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
 
   const handleOpenModal = (provider?: TrainingProvider) => {
     if (provider) {
@@ -102,16 +142,6 @@ export const Providers: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this training provider?')) return;
-    try {
-      await api.delete(`/training-providers/${id}`);
-      fetchProviders();
-    } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to delete provider');
-    }
-  };
-
   const canEdit = user?.role === 'admin' || user?.role === 'evaluator';
   const canDelete = user?.role === 'admin';
 
@@ -143,24 +173,65 @@ export const Providers: React.FC = () => {
         )}
       </div>
 
-      <div className="filters-bar">
-        <input
-          type="text"
-          className="search-input"
-          placeholder="Search by institution, sector, qualification, or PRN..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <select
-          className="select-filter"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="all">All Statuses</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-          <option value="suspended">Suspended</option>
-        </select>
+      <div className="table-actions-bar">
+        <div className="filters-bar">
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search by institution, sector, qualification, or PRN..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <select
+            className="select-filter"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="suspended">Suspended</option>
+          </select>
+        </div>
+
+        {canDelete && (
+          <div className="selection-controls">
+            <label className="select-all-label">
+              <input
+                type="checkbox"
+                className="table-checkbox"
+                checked={isAllSelected}
+                ref={(el) => {
+                  if (el) el.indeterminate = isSomeSelected;
+                }}
+                onChange={handleToggleSelectAll}
+              />
+              <span>Select All</span>
+            </label>
+
+            {selectedIds.length > 0 && (
+              <>
+                <span className="selection-count-badge">
+                  {selectedIds.length} of {providers.length} selected
+                </span>
+                <button
+                  className="btn-delete-bulk"
+                  disabled={bulkDeleting}
+                  onClick={handleBulkDelete}
+                >
+                  🗑️ {bulkDeleting ? 'Deleting…' : `Delete Selected (${selectedIds.length})`}
+                </button>
+                <button
+                  type="button"
+                  className="btn-deselect"
+                  onClick={() => setSelectedIds([])}
+                >
+                  Clear Selection
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="glass-card table-responsive-container">
@@ -172,6 +243,20 @@ export const Providers: React.FC = () => {
           <table className="data-table providers-table">
             <thead>
               <tr>
+                {canDelete && (
+                  <th className="th-checkbox">
+                    <input
+                      type="checkbox"
+                      className="table-checkbox"
+                      checked={isAllSelected}
+                      ref={(el) => {
+                        if (el) el.indeterminate = isSomeSelected;
+                      }}
+                      onChange={handleToggleSelectAll}
+                      title="Select All"
+                    />
+                  </th>
+                )}
                 <th>Institution Name</th>
                 <th>E-mail / Web / FB</th>
                 <th>Type</th>
@@ -184,84 +269,86 @@ export const Providers: React.FC = () => {
                 <th>PRN</th>
                 <th>Date of Expiration</th>
                 <th>Status</th>
-                {(canEdit || canDelete) && <th>Actions</th>}
+                {canEdit && <th>Actions</th>}
               </tr>
             </thead>
             <tbody>
               {providers.length === 0 ? (
                 <tr>
-                  <td colSpan={13} style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
+                  <td colSpan={canDelete ? 14 : 13} style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
                     No training providers found matching criteria.
                   </td>
                 </tr>
               ) : (
-                providers.map((p) => (
-                  <tr key={p.provider_id}>
-                    <td>
-                      <div className="provider-name-cell">
-                        <strong>{p.institution_name}</strong>
-                        {p.school_id && <span className="provider-subcode">{p.school_id}</span>}
-                      </div>
-                    </td>
-                    <td>
-                      <span className="contact-link-text" title={p.email_website_fb || '—'}>
-                        {p.email_website_fb || '—'}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="badge badge-info">{p.institution_type}</span>
-                    </td>
-                    <td>
-                      <span className="badge badge-secondary">{p.classification}</span>
-                    </td>
-                    <td>
-                      <span className="badge badge-program">{p.type_of_program || '—'}</span>
-                    </td>
-                    <td>
-                      <span className="sector-tag">{p.sector || '—'}</span>
-                    </td>
-                    <td>
-                      <div className="qualification-title-text">{p.qualification_title || '—'}</div>
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <span className="hours-val">{p.training_duration_hours ? `${p.training_duration_hours} hrs` : '—'}</span>
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <span className="hours-val">{p.sil_duration_hours ? `${p.sil_duration_hours} hrs` : '—'}</span>
-                    </td>
-                    <td>
-                      <span className="prn-code">{p.program_registration_number || '—'}</span>
-                    </td>
-                    <td>
-                      <span className="validity-tag">{p.date_of_expiration || '—'}</span>
-                    </td>
-                    <td>
-                      <span className={getStatusBadgeClass(p.status)}>
-                        {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
-                      </span>
-                    </td>
-                    {(canEdit || canDelete) && (
+                providers.map((p) => {
+                  const isSelected = selectedIds.includes(p.provider_id);
+                  return (
+                    <tr key={p.provider_id} className={isSelected ? 'row-selected' : ''}>
+                      {canDelete && (
+                        <td className="td-checkbox">
+                          <input
+                            type="checkbox"
+                            className="table-checkbox"
+                            checked={isSelected}
+                            onChange={() => handleToggleSelect(p.provider_id)}
+                          />
+                        </td>
+                      )}
                       <td>
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                          {canEdit && (
+                        <div className="provider-name-cell">
+                          <strong>{p.institution_name}</strong>
+                          {p.school_id && <span className="provider-subcode">{p.school_id}</span>}
+                        </div>
+                      </td>
+                      <td>
+                        <span className="contact-link-text" title={p.email_website_fb || '—'}>
+                          {p.email_website_fb || '—'}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="badge badge-info">{p.institution_type}</span>
+                      </td>
+                      <td>
+                        <span className="badge badge-secondary">{p.classification}</span>
+                      </td>
+                      <td>
+                        <span className="badge badge-program">{p.type_of_program || '—'}</span>
+                      </td>
+                      <td>
+                        <span className="sector-tag">{p.sector || '—'}</span>
+                      </td>
+                      <td>
+                        <div className="qualification-title-text">{p.qualification_title || '—'}</div>
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <span className="hours-val">{p.training_duration_hours ? `${p.training_duration_hours} hrs` : '—'}</span>
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <span className="hours-val">{p.sil_duration_hours ? `${p.sil_duration_hours} hrs` : '—'}</span>
+                      </td>
+                      <td>
+                        <span className="prn-code">{p.program_registration_number || '—'}</span>
+                      </td>
+                      <td>
+                        <span className="validity-tag">{p.date_of_expiration || '—'}</span>
+                      </td>
+                      <td>
+                        <span className={getStatusBadgeClass(p.status)}>
+                          {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
+                        </span>
+                      </td>
+                      {canEdit && (
+                        <td>
+                          <div style={{ display: 'flex', gap: '6px' }}>
                             <button className="btn btn-secondary btn-sm" onClick={() => handleOpenModal(p)}>
                               Edit
                             </button>
-                          )}
-                          {canDelete && (
-                            <button
-                              className="btn btn-sm"
-                              style={{ color: 'var(--status-rejected-text)', borderColor: 'rgba(239, 68, 68, 0.4)' }}
-                              onClick={() => handleDelete(p.provider_id)}
-                            >
-                              Delete
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    )}
-                  </tr>
-                ))
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

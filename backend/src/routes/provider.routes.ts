@@ -171,3 +171,37 @@ providerRouter.delete('/:id', authMiddleware, rbacMiddleware(['admin']), async (
     res.status(e.statusCode ?? 500).json({ error: e.message });
   }
 });
+
+/**
+ * @openapi
+ * /api/v1/training-providers/bulk-delete:
+ *   post:
+ *     summary: Bulk delete training providers
+ *     tags: [Training Providers]
+ *     security: [{ bearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [ids]
+ *             properties:
+ *               ids:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Providers deleted successfully
+ */
+providerRouter.post('/bulk-delete', authMiddleware, rbacMiddleware(['admin']), async (req: Request, res: Response) => {
+  try {
+    const { ids } = req.body as { ids: string[] };
+    const count = await ProviderService.bulkDeleteProviders(ids);
+    res.json({ message: `${count} training provider(s) deleted successfully.`, count });
+  } catch (err) {
+    const e = err as Error & { statusCode?: number };
+    res.status(e.statusCode ?? 500).json({ error: e.message });
+  }
+});

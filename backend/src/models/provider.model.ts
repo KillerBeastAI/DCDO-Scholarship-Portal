@@ -175,6 +175,15 @@ export class ProviderModel {
     return (rowCount ?? 0) > 0;
   }
 
+  static async bulkDelete(ids: string[]): Promise<number> {
+    if (!ids || ids.length === 0) return 0;
+    const { rowCount } = await pool.query(
+      `DELETE FROM training_providers WHERE provider_id = ANY($1::uuid[])`,
+      [ids],
+    );
+    return rowCount ?? 0;
+  }
+
   static async bulkCreate(rows: Record<string, any>[]): Promise<TrainingProvider[]> {
     const results: TrainingProvider[] = [];
     for (const data of rows) {
