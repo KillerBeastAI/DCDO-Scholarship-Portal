@@ -17,6 +17,7 @@ Available database fields:
 - email_website_fb: Email, website or Facebook URL
 - institution_type: Must be exactly one of: Public, Private, LGU-Run
 - classification: Must be exactly one of: TTI, TVI, SUC, LUC, HEI, EBT, EBET
+- type_of_program: Must be one of: IBT, MTP, EBET, Bundled, MCC, Diploma
 - sector: Industry sector or field
 - qualification_title: Course or qualification name
 - training_duration_hours: Training hours (number)

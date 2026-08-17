@@ -16,6 +16,7 @@ const DB_FIELDS = [
   { value: 'email_website_fb', label: 'Email / Website / Facebook' },
   { value: 'institution_type', label: 'Institution Type (Public/Private/LGU-Run)' },
   { value: 'classification', label: 'Classification (TTI/TVI/SUC…)' },
+  { value: 'type_of_program', label: 'Type of Program (IBT/MTP/EBET/Bundled/MCC/Diploma)' },
   { value: 'sector', label: 'Sector' },
   { value: 'qualification_title', label: 'Qualification Title' },
   { value: 'training_duration_hours', label: 'Training Duration (hrs)' },
@@ -48,10 +49,12 @@ export const AIImportModal: React.FC<Props> = ({ onClose, onImported }) => {
       const clean = h.toLowerCase().replace(/[^a-z0-9]/g, '');
       if (clean.includes('institutionname') || clean.includes('schoolname') || clean === 'institution' || clean === 'school') {
         map[h] = 'institution_name';
-      } else if (clean.includes('institutiontype') || clean === 'type') {
+      } else if (clean.includes('institutiontype')) {
         map[h] = 'institution_type';
       } else if (clean.includes('classification')) {
         map[h] = 'classification';
+      } else if (clean.includes('typeofprogram') || clean.includes('programtype') || clean === 'typeofprog' || clean === 'progtype') {
+        map[h] = 'type_of_program';
       } else if (clean.includes('sector')) {
         map[h] = 'sector';
       } else if (clean.includes('qualification') || clean.includes('course') || clean.includes('programtitle')) {
@@ -72,6 +75,8 @@ export const AIImportModal: React.FC<Props> = ({ onClose, onImported }) => {
         map[h] = 'contact_number';
       } else if (clean.includes('email') || clean.includes('website') || clean.includes('fb') || clean.includes('facebook')) {
         map[h] = 'email_website_fb';
+      } else if (clean === 'type') {
+        map[h] = 'institution_type';
       } else {
         map[h] = '__skip__';
       }

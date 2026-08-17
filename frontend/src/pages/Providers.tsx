@@ -21,7 +21,7 @@ export const Providers: React.FC = () => {
     email_website_fb: '',
     institution_type: 'Private',
     classification: 'TVI',
-    type_of_program: 'WTR',
+    type_of_program: 'IBT',
     sector: '',
     qualification_title: '',
     training_duration_hours: '' as string | number,
@@ -63,7 +63,7 @@ export const Providers: React.FC = () => {
         email_website_fb: provider.email_website_fb || '',
         institution_type: provider.institution_type,
         classification: provider.classification,
-        type_of_program: provider.type_of_program || 'WTR',
+        type_of_program: provider.type_of_program || 'IBT',
         sector: provider.sector || '',
         qualification_title: provider.qualification_title || '',
         training_duration_hours: provider.training_duration_hours ?? '',
@@ -215,7 +215,7 @@ export const Providers: React.FC = () => {
                       <span className="badge badge-secondary">{p.classification}</span>
                     </td>
                     <td>
-                      <span className="badge badge-program">{p.type_of_program || 'WTR'}</span>
+                      <span className="badge badge-program">{p.type_of_program || '—'}</span>
                     </td>
                     <td>
                       <span className="sector-tag">{p.sector || '—'}</span>
@@ -374,9 +374,12 @@ export const Providers: React.FC = () => {
                       value={form.type_of_program}
                       onChange={(e) => setForm({ ...form, type_of_program: e.target.value })}
                     >
-                      <option value="WTR">WTR (With Training Regulation)</option>
-                      <option value="NTR">NTR (No Training Regulation)</option>
-                      <option value="Bundled">Bundled Program</option>
+                      <option value="IBT">IBT</option>
+                      <option value="MTP">MTP</option>
+                      <option value="EBET">EBET</option>
+                      <option value="Bundled">Bundled</option>
+                      <option value="MCC">MCC</option>
+                      <option value="Diploma">Diploma</option>
                     </select>
                   </div>
                   <div className="form-group">
