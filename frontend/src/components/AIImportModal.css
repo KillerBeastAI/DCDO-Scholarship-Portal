@@ -201,11 +201,11 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  max-height: 340px;
+  max-height: 400px;
   overflow-y: auto;
+  overflow-x: hidden;
   border: 1px solid var(--border);
   border-radius: 12px;
-  overflow: hidden;
 }
 
 .aimodal-mapping-head,
@@ -216,6 +216,9 @@
 }
 
 .aimodal-mapping-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   background: var(--bg-main);
   padding: 8px 12px;
   font-size: 0.72rem;

@@ -41,6 +41,44 @@ export const AIImportModal: React.FC<Props> = ({ onClose, onImported }) => {
   const [error, setError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Smart heuristic matcher for common column names
+  const autoMapHeaders = (hdrs: string[]) => {
+    const map: Record<string, string> = {};
+    for (const h of hdrs) {
+      const clean = h.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (clean.includes('institutionname') || clean.includes('schoolname') || clean === 'institution' || clean === 'school') {
+        map[h] = 'institution_name';
+      } else if (clean.includes('institutiontype') || clean === 'type') {
+        map[h] = 'institution_type';
+      } else if (clean.includes('classification')) {
+        map[h] = 'classification';
+      } else if (clean.includes('sector')) {
+        map[h] = 'sector';
+      } else if (clean.includes('qualification') || clean.includes('course') || clean.includes('programtitle')) {
+        map[h] = 'qualification_title';
+      } else if (clean.includes('silduration') || (clean.includes('sil') && clean.includes('hour'))) {
+        map[h] = 'sil_duration_hours';
+      } else if (clean.includes('trainingduration') || clean.includes('duration') || clean.includes('traininghour') || clean.includes('hours')) {
+        map[h] = 'training_duration_hours';
+      } else if (clean.includes('registration') || clean.includes('prn') || clean.includes('copr')) {
+        map[h] = 'program_registration_number';
+      } else if (clean.includes('expiration') || clean.includes('expiry') || clean.includes('validuntil')) {
+        map[h] = 'date_of_expiration';
+      } else if (clean.includes('schoolid') || clean.includes('tviid')) {
+        map[h] = 'school_id';
+      } else if (clean.includes('address') || clean.includes('location')) {
+        map[h] = 'complete_address';
+      } else if (clean.includes('contact') || clean.includes('phone') || clean.includes('mobile') || clean.includes('tel')) {
+        map[h] = 'contact_number';
+      } else if (clean.includes('email') || clean.includes('website') || clean.includes('fb') || clean.includes('facebook')) {
+        map[h] = 'email_website_fb';
+      } else {
+        map[h] = '__skip__';
+      }
+    }
+    return map;
+  };
+
   // Parse excel file client-side
   const parseFile = (file: File) => {
     const reader = new FileReader();
@@ -50,12 +88,16 @@ export const AIImportModal: React.FC<Props> = ({ onClose, onImported }) => {
       const ws = wb.Sheets[wb.SheetNames[0]];
       const json: string[][] = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false });
       if (!json.length) { setError('Excel file is empty'); return; }
-      const hdrs = (json[0] as string[]).map((h) => String(h ?? ''));
+      const hdrs = (json[0] as string[]).map((h) => String(h ?? '')).filter((h) => h.trim() !== '');
       const rows = json.slice(1).filter((r) => r.some((c) => c !== '' && c != null));
       setHeaders(hdrs);
       setSampleRows(rows.slice(0, 3) as string[][]);
       setAllRows(rows as string[][]);
       setFileName(file.name);
+      
+      // Immediately set heuristic mapping so user sees matched fields without waiting
+      const heuristicMap = autoMapHeaders(hdrs);
+      setMapping(heuristicMap);
       setStep('mapping');
       askGemini(hdrs, rows.slice(0, 3) as string[][]);
     };
@@ -70,13 +112,12 @@ export const AIImportModal: React.FC<Props> = ({ onClose, onImported }) => {
         '/ai-import/providers/map-columns',
         { headers: hdrs, sampleRows: samples },
       );
-      setMapping(data.data);
+      if (data.data && Object.keys(data.data).length > 0) {
+        setMapping(data.data);
+      }
     } catch {
-      // Fallback: empty mapping so user can fill manually
-      const fallback: Record<string, string> = {};
-      hdrs.forEach((h) => { fallback[h] = '__skip__'; });
-      setMapping(fallback);
-      setError('AI mapping failed — please map columns manually below.');
+      // Heuristic mapping is already populated, inform user
+      setError('AI auto-detection is offline — columns were mapped using standard header matching.');
     } finally {
       setAiLoading(false);
     }
