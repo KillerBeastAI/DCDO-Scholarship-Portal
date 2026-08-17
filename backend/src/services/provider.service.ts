@@ -68,4 +68,8 @@ export class ProviderService {
       throw err;
     }
   }
+
+  static async bulkCreate(rows: Record<string, any>[]) {
+    return ProviderModel.bulkCreate(rows);
+  }
 }

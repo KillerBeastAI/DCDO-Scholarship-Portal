@@ -18,6 +18,7 @@ interface EnvConfig {
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
   GOOGLE_CALLBACK_URL: string;
+  GEMINI_API_KEY: string;
   FRONTEND_URL: string;
 }
 
@@ -45,6 +46,7 @@ export const env: EnvConfig = {
   GOOGLE_CLIENT_ID: optionalEnv('GOOGLE_CLIENT_ID', ''),
   GOOGLE_CLIENT_SECRET: optionalEnv('GOOGLE_CLIENT_SECRET', ''),
   GOOGLE_CALLBACK_URL: optionalEnv('GOOGLE_CALLBACK_URL', 'http://localhost:5000/api/v1/auth/google/callback'),
+  GEMINI_API_KEY: optionalEnv('GEMINI_API_KEY', ''),
   FRONTEND_URL: optionalEnv('FRONTEND_URL', 'http://localhost:3000'),
 };
 

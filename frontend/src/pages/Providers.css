@@ -4,6 +4,24 @@
   gap: 20px;
 }
 
+.btn-ai-import {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+.btn-ai-import:hover { opacity: 0.88; transform: translateY(-1px); }
+.btn-ai-import:active { transform: scale(0.97); }
+
 .page-header {
   display: flex;
   justify-content: space-between;

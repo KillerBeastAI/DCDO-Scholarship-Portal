@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import type { TrainingProvider, ProviderStatus } from '../types';
+import { AIImportModal } from '../components/AIImportModal';
 import './Providers.css';
 
 export const Providers: React.FC = () => {
@@ -13,6 +14,7 @@ export const Providers: React.FC = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showAIImport, setShowAIImport] = useState(false);
 
   const emptyForm = {
     institution_name: '',
@@ -127,9 +129,17 @@ export const Providers: React.FC = () => {
           <div className="page-subtitle-text">Registered Technical Vocational Institutions and Higher Education Programs</div>
         </div>
         {canEdit && (
-          <button className="btn btn-primary" onClick={() => handleOpenModal()}>
-            + Add Provider
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              className="btn btn-ai-import"
+              onClick={() => setShowAIImport(true)}
+            >
+              ✨ AI Import Excel
+            </button>
+            <button className="btn btn-primary" onClick={() => handleOpenModal()}>
+              + Add Provider
+            </button>
+          </div>
         )}
       </div>
 
@@ -453,6 +463,13 @@ export const Providers: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {showAIImport && (
+        <AIImportModal
+          onClose={() => setShowAIImport(false)}
+          onImported={fetchProviders}
+        />
       )}
     </div>
   );

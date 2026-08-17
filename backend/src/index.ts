@@ -15,6 +15,7 @@ import { qmRouter } from './routes/qm.routes.js';
 import { accomplishmentRouter } from './routes/accomplishment.routes.js';
 import { billingRouter } from './routes/billing.routes.js';
 import { dashboardRouter } from './routes/dashboard.routes.js';
+import { aiImportRouter } from './routes/ai-import.routes.js';
 import { swaggerRouter } from './config/swagger.js';
 import { errorHandlerMiddleware } from './middleware/error.middleware.js';
 
@@ -102,6 +103,7 @@ app.use(['/api/v1/qualification-maps', '/v1/qualification-maps'], qmRouter);
 app.use(['/api/v1/accomplishments', '/v1/accomplishments'], accomplishmentRouter);
 app.use(['/api/v1/billings', '/v1/billings'], billingRouter);
 app.use(['/api/v1/dashboard', '/v1/dashboard'], dashboardRouter);
+app.use(['/api/v1/ai-import', '/v1/ai-import'], aiImportRouter);
 app.use(['/api/docs', '/docs'], swaggerRouter);
 
 // ── 404 catch-all ───────────────────────────────────────────

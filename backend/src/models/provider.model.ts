@@ -174,4 +174,43 @@ export class ProviderModel {
     );
     return (rowCount ?? 0) > 0;
   }
+
+  static async bulkCreate(rows: Record<string, any>[]): Promise<TrainingProvider[]> {
+    const results: TrainingProvider[] = [];
+    for (const data of rows) {
+      try {
+        const { rows: created } = await pool.query<TrainingProvider>(
+          `INSERT INTO training_providers (
+            institution_name, email_website_fb, institution_type, classification,
+            type_of_program, sector, qualification_title, training_duration_hours,
+            sil_duration_hours, program_registration_number, date_of_expiration,
+            school_id, complete_address, contact_number, status
+          )
+          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,COALESCE($13,''),$14,'active')
+          ON CONFLICT DO NOTHING
+          RETURNING ${SELECT_COLS}`,
+          [
+            data.institution_name,
+            data.email_website_fb || null,
+            data.institution_type || 'Private',
+            data.classification || 'TVI',
+            data.type_of_program || 'WTR',
+            data.sector || null,
+            data.qualification_title || null,
+            isNaN(Number(data.training_duration_hours)) ? 0 : Number(data.training_duration_hours),
+            isNaN(Number(data.sil_duration_hours)) ? 0 : Number(data.sil_duration_hours),
+            data.program_registration_number || null,
+            data.date_of_expiration || null,
+            data.school_id || null,
+            data.complete_address || '',
+            data.contact_number || null,
+          ],
+        );
+        if (created[0]) results.push(created[0]);
+      } catch (_) {
+        // skip bad rows
+      }
+    }
+    return applyComputedStatus(results);
+  }
 }
