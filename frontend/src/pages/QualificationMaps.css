@@ -1,0 +1,1071 @@
+/* ─── Qualification Maps Management — Modern Government Admin Theme ─── */
+
+.qm-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 100%;
+  animation: qmFadeIn 0.25s ease-out;
+}
+
+@keyframes qmFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── 1. Page Header ─────────────────────────────────────────────── */
+.qm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-bottom: 2px;
+}
+
+.qm-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.qm-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qm-title-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(37, 99, 235, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  font-size: 1.1rem;
+}
+
+.qm-subtitle {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  font-weight: 400;
+  margin: 0;
+}
+
+.btn-add-qm {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-add-qm:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+}
+
+.btn-add-qm:active {
+  transform: translateY(0);
+}
+
+/* ─── 2. Metric / Summary Cards ──────────────────────────────────── */
+.qm-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.qm-metric-card {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.qm-metric-card:hover {
+  border-color: #374151;
+  transform: translateY(-1px);
+}
+
+.qm-metric-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.qm-metric-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+}
+
+.qm-metric-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #f8fafc;
+  line-height: 1.15;
+}
+
+.qm-metric-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.qm-metric--maps .qm-metric-icon {
+  background: rgba(99, 102, 241, 0.12);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.qm-metric--slots .qm-metric-icon {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.qm-metric--budget .qm-metric-icon {
+  background: rgba(59, 130, 246, 0.12);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.qm-metric--providers .qm-metric-icon {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+/* ─── 3. Filter & Search Toolbar ─────────────────────────────────── */
+.qm-toolbar {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.qm-toolbar-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  flex: 1;
+}
+
+.qm-search-wrapper {
+  position: relative;
+  min-width: 260px;
+  flex: 1;
+  max-width: 420px;
+}
+
+.qm-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.qm-search-input {
+  width: 100%;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 9px 36px 9px 34px;
+  color: #f8fafc;
+  font-size: 0.85rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.qm-search-input:focus {
+  border-color: #3b82f6;
+  background: #090d16;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.qm-search-input::placeholder {
+  color: #64748b;
+}
+
+.qm-search-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.qm-search-clear:hover {
+  color: #f8fafc;
+  background: #334155;
+}
+
+.qm-select-filter {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 9px 14px;
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.qm-select-filter:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.qm-select-filter option {
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+.qm-btn-reset-filters {
+  background: transparent;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.qm-btn-reset-filters:hover {
+  background: #1e293b;
+  color: #f8fafc;
+  border-color: #475569;
+}
+
+.qm-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.qm-results-badge {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 500;
+  background: #0f172a;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #1f2937;
+  white-space: nowrap;
+}
+
+/* ─── 4. Table Card & Grouped Two-Level Header ───────────────────── */
+.qm-table-card {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.qm-table-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+  position: relative;
+}
+
+.qm-table {
+  width: 100%;
+  min-width: 1350px;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+/* Grouped Super Header (Row 1) */
+.qm-table-super-header th {
+  background: #090d16;
+  color: #94a3b8;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 10px 14px;
+  border-bottom: 1px solid #1f2937;
+  border-right: 1px solid #1f2937;
+  text-align: center;
+}
+
+.qm-table-super-header th:last-child {
+  border-right: none;
+}
+
+.qm-super-info {
+  background: #0c1322 !important;
+  color: #93c5fd !important;
+}
+
+.qm-super-alloc {
+  background: #0a171c !important;
+  color: #6ee7b7 !important;
+}
+
+.qm-super-funding {
+  background: #0f1422 !important;
+  color: #a5b4fc !important;
+}
+
+.qm-super-total {
+  background: #171b0d !important;
+  color: #fde047 !important;
+}
+
+.qm-super-actions {
+  background: #111827 !important;
+  color: #cbd5e1 !important;
+}
+
+/* Column Header (Row 2) */
+.qm-table-col-header th {
+  background: #0f172a;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 12px 14px;
+  border-bottom: 1px solid #1f2937;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.qm-th-right {
+  text-align: right !important;
+}
+
+.qm-th-center {
+  text-align: center !important;
+}
+
+.qm-th-total {
+  background: #1a1e29 !important;
+  color: #60a5fa !important;
+}
+
+/* Table Body Rows */
+.qm-table tbody tr {
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid rgba(31, 41, 55, 0.7);
+}
+
+.qm-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.qm-table tbody tr:hover {
+  background-color: rgba(30, 41, 59, 0.5);
+}
+
+.qm-table td {
+  padding: 13px 14px;
+  vertical-align: middle;
+  color: #cbd5e1;
+}
+
+.qm-td-rqm {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #60a5fa;
+  white-space: nowrap;
+}
+
+.qm-td-provider {
+  font-weight: 600;
+  color: #f8fafc;
+  min-width: 170px;
+  max-width: 240px;
+  line-height: 1.35;
+}
+
+.qm-td-program {
+  font-weight: 500;
+  color: #e2e8f0;
+  min-width: 170px;
+  max-width: 220px;
+  line-height: 1.35;
+}
+
+.qm-td-qualification {
+  color: #cbd5e1;
+  min-width: 180px;
+  max-width: 250px;
+  line-height: 1.35;
+}
+
+.qm-td-slots {
+  text-align: center;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.qm-slots-badge {
+  display: inline-block;
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #f1f5f9;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+  min-width: 36px;
+}
+
+.qm-td-currency {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: #cbd5e1;
+}
+
+.qm-td-empty-val {
+  text-align: right;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.qm-td-total-approved {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.05);
+  border-left: 1px solid rgba(56, 189, 248, 0.15);
+  border-right: 1px solid rgba(56, 189, 248, 0.15);
+}
+
+.qm-fy-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.qm-fy-badge--current {
+  background: rgba(37, 99, 235, 0.15);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.qm-fy-badge--continuing {
+  background: rgba(147, 51, 234, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+/* ─── 5. Row Action Buttons ──────────────────────────────────────── */
+.qm-actions-cell {
+  white-space: nowrap;
+}
+
+.qm-actions-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qm-btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 11px;
+  border-radius: 7px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.qm-btn-edit {
+  background: #1e293b;
+  border-color: #334155;
+  color: #93c5fd;
+}
+
+.qm-btn-edit:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+
+.qm-btn-delete {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+}
+
+.qm-btn-delete:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+/* ─── 6. Pagination Bar ──────────────────────────────────── */
+.qm-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: #0f172a;
+  border-top: 1px solid #1f2937;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.qm-pagination-info {
+  font-size: 0.82rem;
+  color: #94a3b8;
+}
+
+.qm-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qm-page-size-select {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 0.8rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.qm-page-btn {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+  border-radius: 6px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.qm-page-btn:hover:not(:disabled) {
+  border-color: #3b82f6;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.qm-page-btn.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+}
+
+.qm-page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ─── 7. Empty & Loading States ──────────────────────────────────── */
+.qm-empty-state {
+  text-align: center;
+  padding: 50px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.qm-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: #94a3b8;
+}
+
+.qm-empty-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0;
+}
+
+.qm-empty-desc {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  max-width: 360px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.qm-loading-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 12px;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.qm-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(59, 130, 246, 0.2);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: qmSpin 0.8s linear infinite;
+}
+
+@keyframes qmSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── 8. Modal & Add/Edit Form ───────────────────────────────────── */
+.qm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: qmFadeIn 0.2s ease-out;
+}
+
+.qm-modal-card {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 920px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  animation: qmModalScale 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes qmModalScale {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.qm-modal-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0f172a;
+}
+
+.qm-modal-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qm-modal-close-btn {
+  background: none;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  transition: all 0.15s ease;
+}
+
+.qm-modal-close-btn:hover {
+  background: #1e293b;
+  color: #f8fafc;
+}
+
+.qm-modal-form {
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Two-column layout on desktop */
+.qm-form-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.qm-form-col-left,
+.qm-form-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.qm-section-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #60a5fa;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #1f2937;
+  margin-bottom: 4px;
+}
+
+.qm-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.qm-form-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.qm-form-group label .required-star {
+  color: #f87171;
+  margin-left: 3px;
+}
+
+.qm-form-input,
+.qm-form-select {
+  width: 100%;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #f8fafc;
+  font-size: 0.875rem;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.qm-form-input:focus,
+.qm-form-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.qm-form-input::placeholder {
+  color: #64748b;
+}
+
+.qm-form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.qm-form-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+/* Conditional costs box */
+.qm-conditional-box {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.qm-conditional-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #a5b4fc;
+}
+
+/* ─── 9. Live Funding Summary Card ───────────────────────────────── */
+.qm-summary-card {
+  background: linear-gradient(135deg, #0c1322 0%, #090d16 100%);
+  border: 1px solid #1e3a8a;
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.qm-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.qm-summary-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #93c5fd;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qm-summary-badges {
+  display: flex;
+  gap: 6px;
+}
+
+.qm-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  color: #94a3b8;
+}
+
+.qm-summary-row span:last-child {
+  font-weight: 600;
+  color: #e2e8f0;
+  font-variant-numeric: tabular-nums;
+}
+
+.qm-summary-divider {
+  height: 1px;
+  background: #1e293b;
+  margin: 2px 0;
+}
+
+.qm-summary-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 4px;
+}
+
+.qm-summary-total-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.qm-summary-total-label-text {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #60a5fa;
+}
+
+.qm-summary-total-formula {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+.qm-summary-total-amount {
+  font-size: 1.55rem;
+  font-weight: 900;
+  color: #38bdf8;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Modal Footer Buttons */
+.qm-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  background: #0f172a;
+  border-top: 1px solid #1f2937;
+}
+
+.qm-btn-secondary {
+  background: transparent;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.qm-btn-secondary:hover {
+  background: #1e293b;
+  color: #f8fafc;
+  border-color: #475569;
+}
+
+.qm-btn-primary {
+  background: #2563eb;
+  border: 1px solid #3b82f6;
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 9px 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+
+.qm-btn-primary:hover:not(:disabled) {
+  background: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+.qm-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ─── 10. Responsive Breakpoints ─────────────────────────────────── */
+@media (max-width: 1200px) {
+  .qm-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .qm-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .btn-add-qm {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .qm-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .qm-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .qm-toolbar-left {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .qm-search-wrapper {
+    max-width: 100%;
+  }
+
+  .qm-select-filter {
+    width: 100%;
+  }
+
+  .qm-form-two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .qm-form-row-3 {
+    grid-template-columns: 1fr;
+  }
+}

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import type { QualificationMap, ScholarshipProgram, TrainingProvider } from '../types';
+import './QualificationMaps.css';
 
 export const SCHOLARSHIP_PROGRAMS_LIST = [
   'Training for Work Scholarship Program (TWSP)',
@@ -21,9 +22,16 @@ export const QualificationMaps: React.FC = () => {
   const [programs, setPrograms] = useState<ScholarshipProgram[]>([]);
   const [providers, setProviders] = useState<TrainingProvider[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
+  // Search & Filter state
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [fiscalYearFilter, setFiscalYearFilter] = useState<string>('all');
   const [programFilter, setProgramFilter] = useState<string>('all');
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -72,6 +80,11 @@ export const QualificationMaps: React.FC = () => {
     fetchData();
   }, [fiscalYearFilter]);
 
+  // Reset pagination to page 1 on filter/search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, fiscalYearFilter, programFilter, pageSize]);
+
   // Program condition checks
   const isPesfa = form.program_name.includes('PESFA') || form.program_name.includes('Private Education');
   const isCfsp = form.program_name.includes('CFSP') || form.program_name.includes('Coconut Farmers');
@@ -98,7 +111,12 @@ export const QualificationMaps: React.FC = () => {
 
     const nextIsPesfa = progName.includes('PESFA') || progName.includes('Private Education');
     const nextIsCfsp = progName.includes('CFSP') || progName.includes('Coconut');
-    const nextIsEntrep = nextIsCfsp || progName.includes('STEP') || progName.includes('Special Training') || progName.includes('RCEF-RTES') || progName.includes('Rice');
+    const nextIsEntrep =
+      nextIsCfsp ||
+      progName.includes('STEP') ||
+      progName.includes('Special Training') ||
+      progName.includes('RCEF-RTES') ||
+      progName.includes('Rice');
 
     setForm((prev) => ({
       ...prev,
@@ -183,8 +201,8 @@ export const QualificationMaps: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSaving(true);
     try {
-      // Find matching program_id
       let prog = programs.find((p) => p.program_name === form.program_name);
       if (!prog) {
         prog = programs.find((p) => form.program_name.toLowerCase().includes(p.program_code.toLowerCase()));
@@ -218,6 +236,8 @@ export const QualificationMaps: React.FC = () => {
       fetchData();
     } catch (err: any) {
       alert(err.response?.data?.error || 'Failed to save qualification map');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -231,19 +251,85 @@ export const QualificationMaps: React.FC = () => {
     }
   };
 
-  const formatCurrency = (val?: number | null) =>
-    new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(val) || 0);
+  const formatCurrency = (val?: number | null) => {
+    if (val === null || val === undefined || isNaN(Number(val)) || Number(val) === 0) {
+      return '—';
+    }
+    return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(val));
+  };
 
+  const formatCurrencyStrict = (val?: number | null) => {
+    return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(val) || 0);
+  };
+
+  // Filter and Search logic
   const filteredQms = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
     return qms.filter((qm) => {
       if (fiscalYearFilter !== 'all' && qm.fiscal_year !== fiscalYearFilter) return false;
       if (programFilter !== 'all' && qm.program_name !== programFilter) return false;
+
+      if (q) {
+        const matchRqm = (qm.rqm_code || '').toLowerCase().includes(q);
+        const matchProv = (qm.institution_name || '').toLowerCase().includes(q);
+        const matchQual = (qm.tvet_qualification || '').toLowerCase().includes(q);
+        const matchProg = (qm.program_name || '').toLowerCase().includes(q);
+        if (!matchRqm && !matchProv && !matchQual && !matchProg) {
+          return false;
+        }
+      }
       return true;
     });
-  }, [qms, fiscalYearFilter, programFilter]);
+  }, [qms, fiscalYearFilter, programFilter, searchQuery]);
+
+  // Overall summary metrics
+  const metrics = useMemo(() => {
+    let totalSlots = 0;
+    let totalBudget = 0;
+    const providerSet = new Set<string>();
+
+    filteredQms.forEach((qm) => {
+      const slots = Number(qm.total_slots) || 0;
+      totalSlots += slots;
+
+      const totalTc = Number(qm.total_training_cost) || slots * Number(qm.training_cost_per_capita || 0);
+      const totalTsf = Number(qm.total_support_fund) || slots * Number(qm.support_fund_per_capita || 0);
+      const totalBook = Number(qm.total_book_allowance) || slots * Number(qm.book_allowance || 0);
+      const totalNewNormal =
+        Number(qm.total_new_normal_assistance) || slots * Number(qm.new_normal_assistance || 0);
+      const totalInsurance =
+        Number(qm.total_annual_accident_insurance) || slots * Number(qm.annual_accident_insurance || 0);
+      const totalEntrep = Number(qm.total_entrepreneurship_fee) || slots * Number(qm.entrepreneurship_fee || 0);
+      const totalApproved =
+        Number(qm.total_approved_amount) ||
+        totalTc + totalTsf + totalBook + totalNewNormal + totalInsurance + totalEntrep;
+
+      totalBudget += totalApproved;
+      if (qm.provider_id) providerSet.add(qm.provider_id);
+    });
+
+    return {
+      totalMaps: filteredQms.length,
+      totalSlots,
+      totalBudget,
+      uniqueProviders: providerSet.size,
+    };
+  }, [filteredQms]);
+
+  // Pagination calculation
+  const totalPages = Math.max(1, Math.ceil(filteredQms.length / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedQms = filteredQms.slice(startIndex, startIndex + pageSize);
 
   const canEdit = user?.role === 'admin' || user?.role === 'evaluator';
   const canDelete = user?.role === 'admin';
+  const isFilterActive = fiscalYearFilter !== 'all' || programFilter !== 'all' || searchQuery.trim() !== '';
+
+  const handleResetFilters = () => {
+    setFiscalYearFilter('all');
+    setProgramFilter('all');
+    setSearchQuery('');
+  };
 
   // Live Modal Cost Calculation
   const modalTotalTC = form.total_slots * form.training_cost_per_capita;
@@ -256,407 +342,731 @@ export const QualificationMaps: React.FC = () => {
     modalTotalTC + modalTotalTSF + modalTotalBook + modalTotalNewNormal + modalTotalInsurance + modalTotalEntrep;
 
   return (
-    <div>
-      <div className="page-header">
-        <h2 className="page-title-text">Qualification Maps Management</h2>
+    <div className="qm-page">
+      {/* ─── 1. Page Header ─────────────────────────────────────────── */}
+      <div className="qm-header">
+        <div className="qm-header-left">
+          <h2 className="qm-title">
+            <span className="qm-title-icon">📋</span>
+            Qualification Maps Management
+          </h2>
+          <p className="qm-subtitle">Manage approved scholarship qualification allocations and funding details</p>
+        </div>
         {canEdit && (
-          <button className="btn btn-primary" onClick={() => handleOpenModal()}>
-            + Add Qualification Map
+          <button className="btn-add-qm" onClick={() => handleOpenModal()} id="btn-add-qualification-map">
+            <span>+</span> Add Qualification Map
           </button>
         )}
       </div>
 
-      {/* Filters Bar */}
-      <div className="filters-bar" style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-        <select
-          className="select-filter"
-          value={fiscalYearFilter}
-          onChange={(e) => setFiscalYearFilter(e.target.value)}
-        >
-          <option value="all">All Fiscal Years</option>
-          <option value="FY 2026">FY 2026 (Current)</option>
-          <option value="FY 2025">FY 2025 (Continuing)</option>
-        </select>
+      {/* ─── 2. Metric / Summary Cards ──────────────────────────────── */}
+      <div className="qm-metrics-grid">
+        <div className="qm-metric-card qm-metric--maps">
+          <div className="qm-metric-content">
+            <span className="qm-metric-label">Qualification Maps</span>
+            <span className="qm-metric-value">{metrics.totalMaps}</span>
+          </div>
+          <div className="qm-metric-icon">📑</div>
+        </div>
 
-        <select
-          className="select-filter"
-          value={programFilter}
-          onChange={(e) => setProgramFilter(e.target.value)}
-          style={{ maxWidth: '320px' }}
-        >
-          <option value="all">All Scholarship Programs</option>
-          {SCHOLARSHIP_PROGRAMS_LIST.map((prog) => (
-            <option key={prog} value={prog}>
-              {prog}
-            </option>
-          ))}
-        </select>
+        <div className="qm-metric-card qm-metric--slots">
+          <div className="qm-metric-content">
+            <span className="qm-metric-label">Total Approved Slots</span>
+            <span className="qm-metric-value">{metrics.totalSlots.toLocaleString()}</span>
+          </div>
+          <div className="qm-metric-icon">👥</div>
+        </div>
+
+        <div className="qm-metric-card qm-metric--budget">
+          <div className="qm-metric-content">
+            <span className="qm-metric-label">Total Approved Budget</span>
+            <span className="qm-metric-value">{formatCurrencyStrict(metrics.totalBudget)}</span>
+          </div>
+          <div className="qm-metric-icon">₱</div>
+        </div>
+
+        <div className="qm-metric-card qm-metric--providers">
+          <div className="qm-metric-content">
+            <span className="qm-metric-label">Training Providers</span>
+            <span className="qm-metric-value">{metrics.uniqueProviders}</span>
+          </div>
+          <div className="qm-metric-icon">🏛️</div>
+        </div>
       </div>
 
-      <div className="glass-card" style={{ overflowX: 'auto' }}>
+      {/* ─── 3. Filter & Search Toolbar ─────────────────────────────── */}
+      <div className="qm-toolbar">
+        <div className="qm-toolbar-left">
+          {/* Search Box */}
+          <div className="qm-search-wrapper">
+            <span className="qm-search-icon">🔍</span>
+            <input
+              type="text"
+              className="qm-search-input"
+              placeholder="Search RQM code, provider, qualification, program..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              id="qm-search-input"
+            />
+            {searchQuery && (
+              <button
+                className="qm-search-clear"
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+                title="Clear search"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          {/* Fiscal Year Filter */}
+          <select
+            className="qm-select-filter"
+            value={fiscalYearFilter}
+            onChange={(e) => setFiscalYearFilter(e.target.value)}
+            id="qm-fiscal-year-filter"
+            aria-label="Filter by Fiscal Year"
+          >
+            <option value="all">All Fiscal Years</option>
+            <option value="FY 2026">FY 2026 (Current)</option>
+            <option value="FY 2025">FY 2025 (Continuing)</option>
+          </select>
+
+          {/* Scholarship Program Filter */}
+          <select
+            className="qm-select-filter"
+            value={programFilter}
+            onChange={(e) => setProgramFilter(e.target.value)}
+            id="qm-program-filter"
+            aria-label="Filter by Scholarship Program"
+          >
+            <option value="all">All Scholarship Programs</option>
+            {SCHOLARSHIP_PROGRAMS_LIST.map((prog) => (
+              <option key={prog} value={prog}>
+                {prog}
+              </option>
+            ))}
+          </select>
+
+          {/* Reset Filters Button */}
+          {isFilterActive && (
+            <button className="qm-btn-reset-filters" onClick={handleResetFilters} title="Reset all active filters">
+              <span>✕</span> Reset Filters
+            </button>
+          )}
+        </div>
+
+        <div className="qm-toolbar-right">
+          <span className="qm-results-badge">
+            {filteredQms.length} {filteredQms.length === 1 ? 'record' : 'records'}
+          </span>
+        </div>
+      </div>
+
+      {/* ─── 4. Table Card & Grouped Two-Level Header ───────────────── */}
+      <div className="qm-table-card">
         {loading ? (
-          <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>
-            Loading qualification maps...
+          <div className="qm-loading-wrap">
+            <div className="qm-spinner" />
+            <span>Loading qualification maps...</span>
           </div>
         ) : (
-          <table className="data-table" style={{ fontSize: '0.85rem' }}>
-            <thead>
-              <tr>
-                <th style={{ whiteSpace: 'nowrap' }}>RQM Code</th>
-                <th style={{ whiteSpace: 'nowrap' }}>Fiscal Year</th>
-                <th style={{ whiteSpace: 'nowrap' }}>Scholarship Programs</th>
-                <th style={{ whiteSpace: 'nowrap' }}>Training Provider</th>
-                <th style={{ whiteSpace: 'nowrap' }}>TVET Qualification</th>
-                <th style={{ whiteSpace: 'nowrap' }}>Approved Slots</th>
-                <th style={{ whiteSpace: 'nowrap' }}>Total Training Cost</th>
-                <th style={{ whiteSpace: 'nowrap' }}>Total Training Support Fund</th>
-                <th style={{ whiteSpace: 'nowrap' }}>Total Book Allowance</th>
-                <th style={{ whiteSpace: 'nowrap' }}>Total New Normal Assistance</th>
-                <th style={{ whiteSpace: 'nowrap' }}>Total Annual Accident Insurance</th>
-                <th style={{ whiteSpace: 'nowrap' }}>Total Entrepreneurship Fee</th>
-                <th style={{ whiteSpace: 'nowrap' }}>Total Approved Amount</th>
-                {(canEdit || canDelete) && <th style={{ whiteSpace: 'nowrap' }}>Actions</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredQms.length === 0 ? (
-                <tr>
-                  <td colSpan={14} style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)' }}>
-                    No qualification maps found matching the criteria.
-                  </td>
-                </tr>
-              ) : (
-                filteredQms.map((qm) => {
-                  const slots = Number(qm.total_slots) || 0;
-                  const totalTc = Number(qm.total_training_cost) || slots * Number(qm.training_cost_per_capita || 0);
-                  const totalTsf = Number(qm.total_support_fund) || slots * Number(qm.support_fund_per_capita || 0);
-                  const totalBook = Number(qm.total_book_allowance) || slots * Number(qm.book_allowance || 0);
-                  const totalNewNormal =
-                    Number(qm.total_new_normal_assistance) || slots * Number(qm.new_normal_assistance || 0);
-                  const totalInsurance =
-                    Number(qm.total_annual_accident_insurance) || slots * Number(qm.annual_accident_insurance || 0);
-                  const totalEntrep =
-                    Number(qm.total_entrepreneurship_fee) || slots * Number(qm.entrepreneurship_fee || 0);
-                  const totalApproved = Number(qm.total_approved_amount) || (totalTc + totalTsf + totalBook + totalNewNormal + totalInsurance + totalEntrep);
+          <>
+            <div className="qm-table-scroll">
+              <table className="qm-table">
+                <thead>
+                  {/* Two-level super header row */}
+                  <tr className="qm-table-super-header">
+                    <th colSpan={5} className="qm-super-info">
+                      Qualification Information
+                    </th>
+                    <th colSpan={1} className="qm-super-alloc">
+                      Allocation
+                    </th>
+                    <th colSpan={6} className="qm-super-funding">
+                      Funding Details
+                    </th>
+                    <th colSpan={1} className="qm-super-total">
+                      Total
+                    </th>
+                    {(canEdit || canDelete) && (
+                      <th colSpan={1} className="qm-super-actions">
+                        Actions
+                      </th>
+                    )}
+                  </tr>
 
-                  return (
-                    <tr key={qm.qm_id}>
-                      <td style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{qm.rqm_code || '—'}</td>
-                      <td style={{ whiteSpace: 'nowrap' }}>
-                        <span className="badge badge-verified">{qm.fiscal_year || 'FY 2026'}</span>
-                      </td>
-                      <td style={{ minWidth: '180px', fontWeight: 500 }}>{qm.program_name || '—'}</td>
-                      <td style={{ minWidth: '160px' }}>{qm.institution_name || '—'}</td>
-                      <td style={{ minWidth: '180px' }}>{qm.tvet_qualification}</td>
-                      <td style={{ textAlign: 'center', fontWeight: 600 }}>{slots}</td>
-                      <td>{formatCurrency(totalTc)}</td>
-                      <td>{formatCurrency(totalTsf)}</td>
-                      <td>{totalBook > 0 ? formatCurrency(totalBook) : '—'}</td>
-                      <td>{totalNewNormal > 0 ? formatCurrency(totalNewNormal) : '—'}</td>
-                      <td>{totalInsurance > 0 ? formatCurrency(totalInsurance) : '—'}</td>
-                      <td>{totalEntrep > 0 ? formatCurrency(totalEntrep) : '—'}</td>
-                      <td style={{ fontWeight: 700, color: 'var(--primary)', whiteSpace: 'nowrap' }}>
-                        {formatCurrency(totalApproved)}
-                      </td>
-                      {(canEdit || canDelete) && (
-                        <td style={{ whiteSpace: 'nowrap' }}>
-                          <div style={{ display: 'flex', gap: '8px' }}>
-                            {canEdit && (
-                              <button className="btn btn-secondary btn-sm" onClick={() => handleOpenModal(qm)}>
-                                Edit
+                  {/* Individual column header row */}
+                  <tr className="qm-table-col-header">
+                    <th>RQM Code</th>
+                    <th>Fiscal Year</th>
+                    <th>Scholarship Program</th>
+                    <th>Training Provider</th>
+                    <th>TVET Qualification</th>
+                    <th className="qm-th-center">Approved Slots</th>
+                    <th className="qm-th-right">Total Training Cost</th>
+                    <th className="qm-th-right">Total Support Fund</th>
+                    <th className="qm-th-right">Total Book Allow.</th>
+                    <th className="qm-th-right">Total New Normal</th>
+                    <th className="qm-th-right">Total Accident Ins.</th>
+                    <th className="qm-th-right">Total Entrep. Fee</th>
+                    <th className="qm-th-right qm-th-total">Total Approved Amount</th>
+                    {(canEdit || canDelete) && <th className="qm-th-center">Actions</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedQms.length === 0 ? (
+                    <tr>
+                      <td colSpan={canEdit || canDelete ? 14 : 13} style={{ padding: 0 }}>
+                        <div className="qm-empty-state">
+                          <div className="qm-empty-icon">📋</div>
+                          <h4 className="qm-empty-title">No Qualification Maps Found</h4>
+                          <p className="qm-empty-desc">
+                            {isFilterActive
+                              ? 'No records match your active search and filter criteria. Try resetting filters.'
+                              : 'No qualification maps available. Get started by adding a new qualification map.'}
+                          </p>
+                          {isFilterActive ? (
+                            <button className="qm-btn-secondary" onClick={handleResetFilters}>
+                              Clear Filters
+                            </button>
+                          ) : (
+                            canEdit && (
+                              <button className="btn-add-qm" onClick={() => handleOpenModal()}>
+                                + Add Qualification Map
                               </button>
-                            )}
-                            {canDelete && (
-                              <button
-                                className="btn btn-sm"
-                                style={{
-                                  color: 'var(--status-rejected-text)',
-                                  borderColor: 'var(--status-rejected-text)',
-                                }}
-                                onClick={() => handleDelete(qm.qm_id)}
-                              >
-                                Delete
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      )}
+                            )
+                          )}
+                        </div>
+                      </td>
                     </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                  ) : (
+                    paginatedQms.map((qm) => {
+                      const slots = Number(qm.total_slots) || 0;
+                      const totalTc =
+                        Number(qm.total_training_cost) || slots * Number(qm.training_cost_per_capita || 0);
+                      const totalTsf =
+                        Number(qm.total_support_fund) || slots * Number(qm.support_fund_per_capita || 0);
+                      const totalBook =
+                        Number(qm.total_book_allowance) || slots * Number(qm.book_allowance || 0);
+                      const totalNewNormal =
+                        Number(qm.total_new_normal_assistance) ||
+                        slots * Number(qm.new_normal_assistance || 0);
+                      const totalInsurance =
+                        Number(qm.total_annual_accident_insurance) ||
+                        slots * Number(qm.annual_accident_insurance || 0);
+                      const totalEntrep =
+                        Number(qm.total_entrepreneurship_fee) ||
+                        slots * Number(qm.entrepreneurship_fee || 0);
+                      const totalApproved =
+                        Number(qm.total_approved_amount) ||
+                        totalTc + totalTsf + totalBook + totalNewNormal + totalInsurance + totalEntrep;
+
+                      const isCurrentYear = qm.fiscal_year === 'FY 2026' || !qm.fiscal_year;
+
+                      return (
+                        <tr key={qm.qm_id}>
+                          {/* RQM Code */}
+                          <td className="qm-td-rqm">{qm.rqm_code || '—'}</td>
+
+                          {/* Fiscal Year */}
+                          <td>
+                            <span
+                              className={`qm-fy-badge ${
+                                isCurrentYear ? 'qm-fy-badge--current' : 'qm-fy-badge--continuing'
+                              }`}
+                            >
+                              {qm.fiscal_year || 'FY 2026'}
+                            </span>
+                          </td>
+
+                          {/* Scholarship Program */}
+                          <td className="qm-td-program">{qm.program_name || '—'}</td>
+
+                          {/* Training Provider */}
+                          <td className="qm-td-provider">{qm.institution_name || '—'}</td>
+
+                          {/* TVET Qualification */}
+                          <td className="qm-td-qualification">{qm.tvet_qualification}</td>
+
+                          {/* Approved Slots */}
+                          <td className="qm-td-slots">
+                            <span className="qm-slots-badge">{slots}</span>
+                          </td>
+
+                          {/* Funding Details */}
+                          <td className="qm-td-currency">{formatCurrency(totalTc)}</td>
+                          <td className="qm-td-currency">{formatCurrency(totalTsf)}</td>
+                          <td className={totalBook > 0 ? 'qm-td-currency' : 'qm-td-empty-val'}>
+                            {formatCurrency(totalBook)}
+                          </td>
+                          <td className={totalNewNormal > 0 ? 'qm-td-currency' : 'qm-td-empty-val'}>
+                            {formatCurrency(totalNewNormal)}
+                          </td>
+                          <td className={totalInsurance > 0 ? 'qm-td-currency' : 'qm-td-empty-val'}>
+                            {formatCurrency(totalInsurance)}
+                          </td>
+                          <td className={totalEntrep > 0 ? 'qm-td-currency' : 'qm-td-empty-val'}>
+                            {formatCurrency(totalEntrep)}
+                          </td>
+
+                          {/* Total Approved Amount */}
+                          <td className="qm-td-total-approved">{formatCurrencyStrict(totalApproved)}</td>
+
+                          {/* Actions */}
+                          {(canEdit || canDelete) && (
+                            <td className="qm-actions-cell">
+                              <div className="qm-actions-wrap">
+                                {canEdit && (
+                                  <button
+                                    className="qm-btn-action qm-btn-edit"
+                                    onClick={() => handleOpenModal(qm)}
+                                    title="Edit Qualification Map"
+                                    aria-label="Edit Qualification Map"
+                                  >
+                                    ✏ Edit
+                                  </button>
+                                )}
+                                {canDelete && (
+                                  <button
+                                    className="qm-btn-action qm-btn-delete"
+                                    onClick={() => handleDelete(qm.qm_id)}
+                                    title="Delete Qualification Map"
+                                    aria-label="Delete Qualification Map"
+                                  >
+                                    🗑 Delete
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* ─── 5. Pagination Bar ───────────────────────────────── */}
+            {filteredQms.length > 0 && (
+              <div className="qm-pagination">
+                <div className="qm-pagination-info">
+                  Showing <strong style={{ color: '#f8fafc' }}>{startIndex + 1}</strong> to{' '}
+                  <strong style={{ color: '#f8fafc' }}>
+                    {Math.min(startIndex + pageSize, filteredQms.length)}
+                  </strong>{' '}
+                  of <strong style={{ color: '#f8fafc' }}>{filteredQms.length}</strong> qualification maps
+                </div>
+
+                <div className="qm-pagination-controls">
+                  <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Rows per page:</span>
+                  <select
+                    className="qm-page-size-select"
+                    value={pageSize}
+                    onChange={(e) => setPageSize(Number(e.target.value))}
+                    aria-label="Select records per page"
+                  >
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+
+                  <button
+                    className="qm-page-btn"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    aria-label="Previous Page"
+                  >
+                    ‹ Prev
+                  </button>
+
+                  <span style={{ fontSize: '0.82rem', color: '#cbd5e1', padding: '0 4px' }}>
+                    Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
+                  </span>
+
+                  <button
+                    className="qm-page-btn"
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage >= totalPages}
+                    aria-label="Next Page"
+                  >
+                    Next ›
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
+      {/* ─── 6. Add / Edit Qualification Map Modal ───────────────────── */}
       {showModal && (
-        <div className="modal-backdrop">
-          <div className="modal-card" style={{ maxWidth: '840px', width: '90%' }}>
-            <div className="modal-header">
-              <h3 className="modal-title">{editingId ? 'Edit Qualification Map' : 'Add Qualification Map'}</h3>
-              <button className="close-btn" onClick={() => setShowModal(false)}>
+        <div className="qm-modal-backdrop" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="qm-modal-card" role="dialog" aria-modal="true" aria-labelledby="qm-modal-title">
+            <div className="qm-modal-header">
+              <h3 className="qm-modal-title" id="qm-modal-title">
+                <span>{editingId ? '✏' : '➕'}</span>
+                {editingId ? 'Edit Qualification Map' : 'Add Qualification Map'}
+              </h3>
+              <button
+                className="qm-modal-close-btn"
+                onClick={() => setShowModal(false)}
+                aria-label="Close modal"
+                title="Close modal"
+              >
                 ✕
               </button>
             </div>
-            <form onSubmit={handleSave} className="modal-form">
-              {/* Row 1: Scholarship Program & Appropriation */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 0.8fr 0.8fr', gap: '12px' }}>
-                <div className="form-group">
-                  <label>Scholarship Program</label>
-                  <select
-                    className="form-input"
-                    value={form.program_name}
-                    onChange={(e) => handleProgramChange(e.target.value)}
-                    required
-                  >
-                    {SCHOLARSHIP_PROGRAMS_LIST.map((prog) => (
-                      <option key={prog} value={prog}>
-                        {prog}
-                      </option>
-                    ))}
-                  </select>
+
+            <form onSubmit={handleSave} className="qm-modal-form">
+              <div className="qm-form-two-col">
+                {/* ── Left Column: Scholarship / Program Information ── */}
+                <div className="qm-form-col-left">
+                  <div className="qm-section-title">
+                    <span>📌</span> Scholarship & Program Details
+                  </div>
+
+                  {/* Scholarship Program */}
+                  <div className="qm-form-group">
+                    <label htmlFor="qm-form-program">
+                      Scholarship Program <span className="required-star">*</span>
+                    </label>
+                    <select
+                      id="qm-form-program"
+                      className="qm-form-select"
+                      value={form.program_name}
+                      onChange={(e) => handleProgramChange(e.target.value)}
+                      required
+                    >
+                      {SCHOLARSHIP_PROGRAMS_LIST.map((prog) => (
+                        <option key={prog} value={prog}>
+                          {prog}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Appropriation & Allocation */}
+                  <div className="qm-form-row-2">
+                    <div className="qm-form-group">
+                      <label htmlFor="qm-form-appropriation">
+                        Appropriation <span className="required-star">*</span>
+                      </label>
+                      <select
+                        id="qm-form-appropriation"
+                        className="qm-form-select"
+                        value={form.appropriation}
+                        onChange={(e) => handleAppropriationChange(e.target.value as any)}
+                        required
+                      >
+                        <option value="Current">Current (FY 2026)</option>
+                        <option value="Continuing">Continuing (FY 2025)</option>
+                      </select>
+                    </div>
+
+                    <div className="qm-form-group">
+                      <label htmlFor="qm-form-allocation">
+                        Allocation <span className="required-star">*</span>
+                      </label>
+                      <select
+                        id="qm-form-allocation"
+                        className="qm-form-select"
+                        value={form.allocation}
+                        onChange={(e) => setForm({ ...form, allocation: e.target.value as any })}
+                        required
+                      >
+                        <option value="RO">RO (Regional Office)</option>
+                        <option value="CO">CO (Central Office)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* RQM Code */}
+                  <div className="qm-form-group">
+                    <label htmlFor="qm-form-rqm-code">RQM Code</label>
+                    <input
+                      id="qm-form-rqm-code"
+                      type="text"
+                      className="qm-form-input"
+                      value={form.rqm_code}
+                      onChange={(e) => setForm({ ...form, rqm_code: e.target.value })}
+                      placeholder="e.g. RQM11-2026-TWSP-1124-0001"
+                    />
+                  </div>
+
+                  {/* Training Provider */}
+                  <div className="qm-form-group">
+                    <label htmlFor="qm-form-provider">
+                      Training Provider <span className="required-star">*</span>
+                    </label>
+                    <select
+                      id="qm-form-provider"
+                      className="qm-form-select"
+                      value={form.provider_id}
+                      onChange={(e) => handleProviderChange(e.target.value)}
+                      required
+                    >
+                      <option value="">Select Training Provider</option>
+                      {providers.map((pr) => (
+                        <option key={pr.provider_id} value={pr.provider_id}>
+                          {pr.institution_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Sector */}
+                  <div className="qm-form-group">
+                    <label htmlFor="qm-form-sector">
+                      Sector <span className="required-star">*</span>
+                    </label>
+                    <input
+                      id="qm-form-sector"
+                      type="text"
+                      className="qm-form-input"
+                      value={form.sector}
+                      onChange={(e) => setForm({ ...form, sector: e.target.value })}
+                      placeholder="e.g. Information and Communications Technology (ICT)"
+                      required
+                    />
+                  </div>
+
+                  {/* TVET Qualification Title */}
+                  <div className="qm-form-group">
+                    <label htmlFor="qm-form-qualification">
+                      TVET Qualification Title <span className="required-star">*</span>
+                    </label>
+                    <input
+                      id="qm-form-qualification"
+                      type="text"
+                      className="qm-form-input"
+                      value={form.tvet_qualification}
+                      onChange={(e) => setForm({ ...form, tvet_qualification: e.target.value })}
+                      placeholder="e.g. Computer Systems Servicing NC II"
+                      required
+                    />
+                  </div>
                 </div>
 
-                <div className="form-group">
-                  <label>Appropriation</label>
-                  <select
-                    className="form-input"
-                    value={form.appropriation}
-                    onChange={(e) => handleAppropriationChange(e.target.value as any)}
-                    required
-                  >
-                    <option value="Current">Current (FY 2026)</option>
-                    <option value="Continuing">Continuing (FY 2025)</option>
-                  </select>
-                </div>
+                {/* ── Right Column: Funding, Costs & Live Calculation ── */}
+                <div className="qm-form-col-right">
+                  <div className="qm-section-title">
+                    <span>💰</span> Funding & Allocation Details
+                  </div>
 
-                <div className="form-group">
-                  <label>Allocation</label>
-                  <select
-                    className="form-input"
-                    value={form.allocation}
-                    onChange={(e) => setForm({ ...form, allocation: e.target.value as any })}
-                    required
-                  >
-                    <option value="RO">RO</option>
-                    <option value="CO">CO</option>
-                  </select>
+                  {/* Approved Slots, TC / Slot, TSF / Slot */}
+                  <div className="qm-form-row-3">
+                    <div className="qm-form-group">
+                      <label htmlFor="qm-form-slots">
+                        Approved Slots <span className="required-star">*</span>
+                      </label>
+                      <input
+                        id="qm-form-slots"
+                        type="number"
+                        min="1"
+                        className="qm-form-input"
+                        value={form.total_slots}
+                        onChange={(e) => setForm({ ...form, total_slots: parseInt(e.target.value, 10) || 0 })}
+                        required
+                      />
+                    </div>
+
+                    <div className="qm-form-group">
+                      <label htmlFor="qm-form-tc">
+                        TC / Slot (₱) <span className="required-star">*</span>
+                      </label>
+                      <input
+                        id="qm-form-tc"
+                        type="number"
+                        min="0"
+                        className="qm-form-input"
+                        value={form.training_cost_per_capita}
+                        onChange={(e) =>
+                          setForm({ ...form, training_cost_per_capita: parseFloat(e.target.value) || 0 })
+                        }
+                        required
+                      />
+                    </div>
+
+                    <div className="qm-form-group">
+                      <label htmlFor="qm-form-tsf">TSF / Slot (₱)</label>
+                      <input
+                        id="qm-form-tsf"
+                        type="number"
+                        min="0"
+                        className="qm-form-input"
+                        value={form.support_fund_per_capita}
+                        onChange={(e) =>
+                          setForm({ ...form, support_fund_per_capita: parseFloat(e.target.value) || 0 })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  {/* Conditional Program-Specific Costs */}
+                  {(isPesfa || isCfsp || isEntrepApplicable) && (
+                    <div className="qm-conditional-box">
+                      <div className="qm-conditional-title">Program-Specific Cost Components</div>
+                      <div className="qm-form-row-2">
+                        {isPesfa && (
+                          <div className="qm-form-group">
+                            <label htmlFor="qm-form-book-allowance">Book Allowance (PESFA)</label>
+                            <input
+                              id="qm-form-book-allowance"
+                              type="number"
+                              min="0"
+                              className="qm-form-input"
+                              value={form.book_allowance}
+                              onChange={(e) =>
+                                setForm({ ...form, book_allowance: parseFloat(e.target.value) || 0 })
+                              }
+                            />
+                          </div>
+                        )}
+
+                        {isCfsp && (
+                          <>
+                            <div className="qm-form-group">
+                              <label htmlFor="qm-form-new-normal">New Normal Assist. (CFSP)</label>
+                              <input
+                                id="qm-form-new-normal"
+                                type="number"
+                                min="0"
+                                className="qm-form-input"
+                                value={form.new_normal_assistance}
+                                onChange={(e) =>
+                                  setForm({ ...form, new_normal_assistance: parseFloat(e.target.value) || 0 })
+                                }
+                              />
+                            </div>
+
+                            <div className="qm-form-group">
+                              <label htmlFor="qm-form-insurance">Accident Insurance (CFSP)</label>
+                              <input
+                                id="qm-form-insurance"
+                                type="number"
+                                min="0"
+                                className="qm-form-input"
+                                value={form.annual_accident_insurance}
+                                onChange={(e) =>
+                                  setForm({
+                                    ...form,
+                                    annual_accident_insurance: parseFloat(e.target.value) || 0,
+                                  })
+                                }
+                              />
+                            </div>
+                          </>
+                        )}
+
+                        {isEntrepApplicable && (
+                          <div className="qm-form-group">
+                            <label htmlFor="qm-form-entrep">Entrepreneurship Fee (CFSP/STEP/RTES)</label>
+                            <input
+                              id="qm-form-entrep"
+                              type="number"
+                              min="0"
+                              className="qm-form-input"
+                              value={form.entrepreneurship_fee}
+                              onChange={(e) =>
+                                setForm({ ...form, entrepreneurship_fee: parseFloat(e.target.value) || 0 })
+                              }
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── Live Funding Summary Card ── */}
+                  <div className="qm-summary-card">
+                    <div className="qm-summary-header">
+                      <span className="qm-summary-title">
+                        <span>📊</span> Live Funding Summary
+                      </span>
+                      <div className="qm-summary-badges">
+                        <span className="qm-fy-badge qm-fy-badge--current">{form.fiscal_year}</span>
+                        <span className="qm-fy-badge qm-fy-badge--continuing">{form.allocation}</span>
+                      </div>
+                    </div>
+
+                    <div className="qm-summary-row">
+                      <span>Approved Slots:</span>
+                      <span>{form.total_slots} slots</span>
+                    </div>
+
+                    <div className="qm-summary-row">
+                      <span>Training Cost (TC):</span>
+                      <span>
+                        {form.total_slots} × {formatCurrencyStrict(form.training_cost_per_capita)} ={' '}
+                        {formatCurrencyStrict(modalTotalTC)}
+                      </span>
+                    </div>
+
+                    <div className="qm-summary-row">
+                      <span>Training Support Fund (TSF):</span>
+                      <span>
+                        {form.total_slots} × {formatCurrencyStrict(form.support_fund_per_capita)} ={' '}
+                        {formatCurrencyStrict(modalTotalTSF)}
+                      </span>
+                    </div>
+
+                    {modalTotalBook > 0 && (
+                      <div className="qm-summary-row">
+                        <span>Book Allowance:</span>
+                        <span>{formatCurrencyStrict(modalTotalBook)}</span>
+                      </div>
+                    )}
+
+                    {modalTotalNewNormal > 0 && (
+                      <div className="qm-summary-row">
+                        <span>New Normal Assistance:</span>
+                        <span>{formatCurrencyStrict(modalTotalNewNormal)}</span>
+                      </div>
+                    )}
+
+                    {modalTotalInsurance > 0 && (
+                      <div className="qm-summary-row">
+                        <span>Accident Insurance:</span>
+                        <span>{formatCurrencyStrict(modalTotalInsurance)}</span>
+                      </div>
+                    )}
+
+                    {modalTotalEntrep > 0 && (
+                      <div className="qm-summary-row">
+                        <span>Entrepreneurship Fee:</span>
+                        <span>{formatCurrencyStrict(modalTotalEntrep)}</span>
+                      </div>
+                    )}
+
+                    <div className="qm-summary-divider" />
+
+                    <div className="qm-summary-total-row">
+                      <div className="qm-summary-total-label">
+                        <span className="qm-summary-total-label-text">Total Approved Amount</span>
+                        <span className="qm-summary-total-formula">Slots × ∑ Unit Costs</span>
+                      </div>
+                      <div className="qm-summary-total-amount">{formatCurrencyStrict(modalTotalApproved)}</div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Row 2: RQM Code & Training Provider */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div className="form-group">
-                  <label>RQM Code</label>
-                  <input
-                    className="form-input"
-                    value={form.rqm_code}
-                    onChange={(e) => setForm({ ...form, rqm_code: e.target.value })}
-                    placeholder="e.g. RQM11-2026-TWSP-1124-0001"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Training Provider</label>
-                  <select
-                    className="form-input"
-                    value={form.provider_id}
-                    onChange={(e) => handleProviderChange(e.target.value)}
-                    required
-                  >
-                    <option value="">Select Training Provider</option>
-                    {providers.map((pr) => (
-                      <option key={pr.provider_id} value={pr.provider_id}>
-                        {pr.institution_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Row 3: Sector & TVET Qualification Title */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div className="form-group">
-                  <label>Sector</label>
-                  <input
-                    className="form-input"
-                    value={form.sector}
-                    onChange={(e) => setForm({ ...form, sector: e.target.value })}
-                    placeholder="e.g. Information and Communications Technology (ICT)"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>TVET Qualification Title</label>
-                  <input
-                    className="form-input"
-                    value={form.tvet_qualification}
-                    onChange={(e) => setForm({ ...form, tvet_qualification: e.target.value })}
-                    placeholder="e.g. Computer Systems Servicing NC II"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Row 4: Base Unit Costs */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-                <div className="form-group">
-                  <label>Approved Slots</label>
-                  <input
-                    type="number"
-                    min="1"
-                    className="form-input"
-                    value={form.total_slots}
-                    onChange={(e) => setForm({ ...form, total_slots: parseInt(e.target.value, 10) || 0 })}
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Training Cost (TC) / Slot</label>
-                  <input
-                    type="number"
-                    min="0"
-                    className="form-input"
-                    value={form.training_cost_per_capita}
-                    onChange={(e) =>
-                      setForm({ ...form, training_cost_per_capita: parseFloat(e.target.value) || 0 })
-                    }
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Training Support Fund (TSF) / Slot</label>
-                  <input
-                    type="number"
-                    min="0"
-                    className="form-input"
-                    value={form.support_fund_per_capita}
-                    onChange={(e) =>
-                      setForm({ ...form, support_fund_per_capita: parseFloat(e.target.value) || 0 })
-                    }
-                  />
-                </div>
-              </div>
-
-              {/* Row 5: Conditional Program Specific Costs */}
-              {(isPesfa || isCfsp || isEntrepApplicable) && (
-                <div
-                  style={{
-                    padding: '16px',
-                    borderRadius: '8px',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    marginTop: '8px',
-                  }}
+              {/* Modal Footer Buttons */}
+              <div className="qm-modal-footer">
+                <button
+                  type="button"
+                  className="qm-btn-secondary"
+                  onClick={() => setShowModal(false)}
+                  disabled={saving}
                 >
-                  <div style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: '12px', color: 'var(--primary)' }}>
-                    Program-Specific Cost Components
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
-                    {isPesfa && (
-                      <div className="form-group">
-                        <label>Book Allowance (PESFA)</label>
-                        <input
-                          type="number"
-                          min="0"
-                          className="form-input"
-                          value={form.book_allowance}
-                          onChange={(e) =>
-                            setForm({ ...form, book_allowance: parseFloat(e.target.value) || 0 })
-                          }
-                        />
-                      </div>
-                    )}
-
-                    {isCfsp && (
-                      <>
-                        <div className="form-group">
-                          <label>New Normal Assistance (CFSP)</label>
-                          <input
-                            type="number"
-                            min="0"
-                            className="form-input"
-                            value={form.new_normal_assistance}
-                            onChange={(e) =>
-                              setForm({ ...form, new_normal_assistance: parseFloat(e.target.value) || 0 })
-                            }
-                          />
-                        </div>
-
-                        <div className="form-group">
-                          <label>Annual Accident Insurance (CFSP)</label>
-                          <input
-                            type="number"
-                            min="0"
-                            className="form-input"
-                            value={form.annual_accident_insurance}
-                            onChange={(e) =>
-                              setForm({ ...form, annual_accident_insurance: parseFloat(e.target.value) || 0 })
-                            }
-                          />
-                        </div>
-                      </>
-                    )}
-
-                    {isEntrepApplicable && (
-                      <div className="form-group">
-                        <label>Entrepreneurship Fee (CFSP/STEP/RTES)</label>
-                        <input
-                          type="number"
-                          min="0"
-                          className="form-input"
-                          value={form.entrepreneurship_fee}
-                          onChange={(e) =>
-                            setForm({ ...form, entrepreneurship_fee: parseFloat(e.target.value) || 0 })
-                          }
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Total Approved Amount Summary Banner */}
-              <div
-                style={{
-                  marginTop: '16px',
-                  padding: '16px',
-                  borderRadius: '8px',
-                  background: 'rgba(59, 130, 246, 0.1)',
-                  border: '1px solid rgba(59, 130, 246, 0.25)',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    Total Approved Amount ({form.fiscal_year} • {form.allocation})
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    TC: {formatCurrency(modalTotalTC)} | TSF: {formatCurrency(modalTotalTSF)}
-                    {modalTotalBook > 0 && ` | Book: ${formatCurrency(modalTotalBook)}`}
-                    {modalTotalNewNormal > 0 && ` | New Normal: ${formatCurrency(modalTotalNewNormal)}`}
-                    {modalTotalInsurance > 0 && ` | Insurance: ${formatCurrency(modalTotalInsurance)}`}
-                    {modalTotalEntrep > 0 && ` | Entrep: ${formatCurrency(modalTotalEntrep)}`}
-                  </div>
-                </div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--primary)' }}>
-                  {formatCurrency(modalTotalApproved)}
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '20px' }}>
-                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary">
-                  Save Qualification Map
+                <button type="submit" className="qm-btn-primary" disabled={saving}>
+                  {saving ? 'Saving...' : editingId ? 'Update Qualification Map' : 'Save Qualification Map'}
                 </button>
               </div>
             </form>
