@@ -32,8 +32,8 @@ export const qmRouter = Router();
  */
 qmRouter.get('/', authMiddleware, async (req: Request, res: Response) => {
   try {
-    const { program_id, provider_id, status } = req.query as Record<string, string | undefined>;
-    const qms = await QMService.getAllQMs({ program_id, provider_id, status: status as any });
+    const { program_id, provider_id, status, fiscal_year } = req.query as Record<string, string | undefined>;
+    const qms = await QMService.getAllQMs({ program_id, provider_id, status: status as any, fiscal_year });
     res.json({ data: qms });
   } catch (err) {
     const e = err as Error & { statusCode?: number };

@@ -7,6 +7,33 @@ export const programRouter = Router();
 
 /**
  * @openapi
+ * /api/v1/scholarship-programs/summary:
+ *   get:
+ *     summary: Get aggregated scholarship programs metrics from qualification maps and physical accomplishments
+ *     tags: [Scholarship Programs]
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: query
+ *         name: fiscal_year
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of aggregated scholarship program summaries
+ */
+programRouter.get('/summary', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const fiscalYear = req.query.fiscal_year ? (req.query.fiscal_year as string) : undefined;
+    const summary = await ProgramService.getAggregatedSummary(fiscalYear);
+    res.json({ data: summary });
+  } catch (err) {
+    const e = err as Error & { statusCode?: number };
+    res.status(e.statusCode ?? 500).json({ error: e.message });
+  }
+});
+
+/**
+ * @openapi
  * /api/v1/scholarship-programs:
  *   get:
  *     summary: List scholarship programs
@@ -23,6 +50,11 @@ export const programRouter = Router();
  */
 programRouter.get('/', authMiddleware, async (req: Request, res: Response) => {
   try {
+    if (req.query.summary === 'true') {
+      const fiscalYear = req.query.fiscal_year ? (req.query.fiscal_year as string) : undefined;
+      const summary = await ProgramService.getAggregatedSummary(fiscalYear);
+      return res.json({ data: summary });
+    }
     const fiscalYear = req.query.fiscal_year ? parseInt(req.query.fiscal_year as string, 10) : undefined;
     const programs = await ProgramService.getAllPrograms(fiscalYear);
     res.json({ data: programs });

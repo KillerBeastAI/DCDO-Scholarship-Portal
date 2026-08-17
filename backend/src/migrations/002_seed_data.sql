@@ -52,45 +52,79 @@ ON CONFLICT (provider_id) DO NOTHING;
 INSERT INTO scholarship_programs (program_id, program_code, program_name, fiscal_year, total_allocated, total_disbursed)
 VALUES
   ('c0000000-0000-0000-0000-000000000001',
-   'PESFA-2026', 'Private Education Student Financial Assistance', 2026, 15000000.00, 4250000.00),
+   'PESFA', 'Private Education Student Financial Assistance (PESFA)', 2026, 15000000.00, 4250000.00),
 
   ('c0000000-0000-0000-0000-000000000002',
-   'TWSP-2026', 'Training for Work Scholarship Program', 2026, 25000000.00, 8750000.00),
+   'TWSP', 'Training for Work Scholarship Program (TWSP)', 2026, 25000000.00, 8750000.00),
 
   ('c0000000-0000-0000-0000-000000000003',
-   'STEP-2026', 'Special Training for Employment Program', 2026, 10000000.00, 1500000.00)
+   'STEP', 'Special Training for Employment Program (STEP)', 2026, 10000000.00, 1500000.00),
+
+  ('c0000000-0000-0000-0000-000000000004',
+   'TTSP', 'Tulong Trabaho Scholarship Program (TTSP)', 2026, 0, 0),
+
+  ('c0000000-0000-0000-0000-000000000005',
+   'TSUPER', 'Tsuper Iskolar', 2026, 0, 0),
+
+  ('c0000000-0000-0000-0000-000000000006',
+   'RCEF-RTES', 'Rice Training and Extension Services (RCEF-RTES)', 2026, 0, 0),
+
+  ('c0000000-0000-0000-0000-000000000007',
+   'CFSP', 'Coconut Farmers Scholarship Program (CFSP)', 2026, 0, 0),
+
+  ('c0000000-0000-0000-0000-000000000008',
+   'CDWs', 'Child Development Workers (CDWs) Scholarship Program', 2026, 0, 0),
+
+  ('c0000000-0000-0000-0000-000000000009',
+   'LEAP', 'Lifelong Employability and Advancement Program (LEAP)', 2026, 0, 0)
 ON CONFLICT (program_id) DO NOTHING;
 
 -- ── 4. Qualification Maps ──────────────────────────────────
-INSERT INTO qualification_maps (qm_id, program_id, provider_id, rqm_code, nqm_code, pqm_code, sector, tvet_qualification, qualification_level, delivery_mode, total_slots, training_cost_per_capita, support_fund_per_capita, assessment_fee, total_approved_amount, status)
+INSERT INTO qualification_maps (
+  qm_id, program_id, provider_id, rqm_code, nqm_code, pqm_code,
+  appropriation, fiscal_year, allocation, sector, tvet_qualification,
+  qualification_level, delivery_mode, total_slots,
+  training_cost_per_capita, support_fund_per_capita, assessment_fee,
+  book_allowance, new_normal_assistance, annual_accident_insurance, entrepreneurship_fee,
+  total_training_cost, total_support_fund, total_book_allowance, total_new_normal_assistance,
+  total_annual_accident_insurance, total_entrepreneurship_fee, total_approved_amount, status
+)
 VALUES
   ('d0000000-0000-0000-0000-000000000001',
    'c0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001',
    'RQM-001', 'NQM-001', 'PQM-001',
+   'Current', 'FY 2026', 'RO',
    'Information and Communication Technology',
    'Computer Systems Servicing NC II', 'NC II', 'Institution-Based',
-   30, 15000.00, 3000.00, 1500.00, 585000.00, 'approved'),
+   30, 15000.00, 3000.00, 1500.00, 500.00, 0.00, 0.00, 0.00,
+   450000.00, 90000.00, 15000.00, 0.00, 0.00, 0.00, 555000.00, 'approved'),
 
   ('d0000000-0000-0000-0000-000000000002',
    'c0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000002',
    'RQM-002', 'NQM-002', 'PQM-002',
+   'Current', 'FY 2026', 'CO',
    'Tourism (Hotel and Restaurant)',
    'Food and Beverage Services NC II', 'NC II', 'Institution-Based',
-   25, 12000.00, 2500.00, 1200.00, 392500.00, 'approved'),
+   25, 12000.00, 2500.00, 1200.00, 0.00, 0.00, 0.00, 0.00,
+   300000.00, 62500.00, 0.00, 0.00, 0.00, 0.00, 362500.00, 'approved'),
 
   ('d0000000-0000-0000-0000-000000000003',
    'c0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000003',
    'RQM-003', 'NQM-003', 'PQM-003',
+   'Continuing', 'FY 2025', 'CO',
    'Electrical and Electronics',
    'Electrical Installation and Maintenance NC II', 'NC II', 'Dual Training System',
-   20, 18000.00, 3500.00, 1800.00, 466000.00, 'draft'),
+   20, 18000.00, 3500.00, 1800.00, 0.00, 0.00, 0.00, 0.00,
+   360000.00, 70000.00, 0.00, 0.00, 0.00, 0.00, 430000.00, 'draft'),
 
   ('d0000000-0000-0000-0000-000000000004',
    'c0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000001',
    'RQM-004', 'NQM-004', 'PQM-004',
+   'Current', 'FY 2026', 'CO',
    'Automotive and Land Transportation',
    'Automotive Servicing NC I', 'NC I', 'Community-Based',
-   15, 10000.00, 2000.00, 1000.00, 195000.00, 'approved')
+   15, 10000.00, 2000.00, 1000.00, 0.00, 0.00, 0.00, 1000.00,
+   150000.00, 30000.00, 0.00, 0.00, 0.00, 15000.00, 195000.00, 'approved')
 ON CONFLICT (qm_id) DO NOTHING;
 
 -- ── 5. Physical Accomplishments ────────────────────────────

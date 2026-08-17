@@ -6,6 +6,7 @@ export class QMModel {
     program_id?: string;
     provider_id?: string;
     status?: QMStatus;
+    fiscal_year?: string;
   }): Promise<QualificationMap[]> {
     const conditions: string[] = [];
     const values: unknown[] = [];
@@ -22,6 +23,10 @@ export class QMModel {
     if (filters?.status) {
       conditions.push(`qm.status = $${idx++}`);
       values.push(filters.status);
+    }
+    if (filters?.fiscal_year) {
+      conditions.push(`qm.fiscal_year = $${idx++}`);
+      values.push(filters.fiscal_year);
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -55,27 +60,61 @@ export class QMModel {
     rqm_code?: string | null;
     nqm_code?: string | null;
     pqm_code?: string | null;
+    appropriation?: string;
+    fiscal_year?: string;
+    allocation?: string;
     sector: string;
     tvet_qualification: string;
-    qualification_level: string;
-    delivery_mode: string;
+    qualification_level?: string;
+    delivery_mode?: string;
     total_slots: number;
     training_cost_per_capita: number;
     support_fund_per_capita?: number;
     assessment_fee?: number;
-    total_approved_amount?: number;
+    book_allowance?: number;
+    new_normal_assistance?: number;
+    annual_accident_insurance?: number;
+    entrepreneurship_fee?: number;
     status?: QMStatus;
   }): Promise<QualificationMap> {
-    const totalApproved = data.total_approved_amount ??
-      (data.total_slots * (data.training_cost_per_capita + (data.support_fund_per_capita ?? 0) + (data.assessment_fee ?? 0)));
+    const slots = Number(data.total_slots) || 0;
+    const tc = Number(data.training_cost_per_capita) || 0;
+    const tsf = Number(data.support_fund_per_capita) || 0;
+    const book = Number(data.book_allowance) || 0;
+    const newNormal = Number(data.new_normal_assistance) || 0;
+    const insurance = Number(data.annual_accident_insurance) || 0;
+    const entrep = Number(data.entrepreneurship_fee) || 0;
+
+    const totalTc = slots * tc;
+    const totalTsf = slots * tsf;
+    const totalBook = slots * book;
+    const totalNewNormal = slots * newNormal;
+    const totalInsurance = slots * insurance;
+    const totalEntrep = slots * entrep;
+    const totalApproved = totalTc + totalTsf + totalBook + totalNewNormal + totalInsurance + totalEntrep;
 
     const { rows } = await pool.query<QualificationMap>(
       `INSERT INTO qualification_maps (
         program_id, provider_id, rqm_code, nqm_code, pqm_code,
+        appropriation, fiscal_year, allocation,
         sector, tvet_qualification, qualification_level, delivery_mode,
         total_slots, training_cost_per_capita, support_fund_per_capita,
-        assessment_fee, total_approved_amount, status
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, COALESCE($15, 'draft'))
+        assessment_fee, book_allowance, new_normal_assistance,
+        annual_accident_insurance, entrepreneurship_fee,
+        total_training_cost, total_support_fund, total_book_allowance,
+        total_new_normal_assistance, total_annual_accident_insurance,
+        total_entrepreneurship_fee, total_approved_amount, status
+       ) VALUES (
+        $1, $2, $3, $4, $5,
+        $6, $7, $8,
+        $9, $10, $11, $12,
+        $13, $14, $15,
+        $16, $17, $18,
+        $19, $20,
+        $21, $22, $23,
+        $24, $25,
+        $26, $27, COALESCE($28, 'approved')
+       )
        RETURNING *`,
       [
         data.program_id,
@@ -83,16 +122,29 @@ export class QMModel {
         data.rqm_code || null,
         data.nqm_code || null,
         data.pqm_code || null,
+        data.appropriation || 'Current',
+        data.fiscal_year || 'FY 2026',
+        data.allocation || 'CO',
         data.sector,
         data.tvet_qualification,
-        data.qualification_level,
-        data.delivery_mode,
-        data.total_slots,
-        data.training_cost_per_capita,
-        data.support_fund_per_capita ?? 0,
+        data.qualification_level || 'NC II',
+        data.delivery_mode || 'Institution-Based',
+        slots,
+        tc,
+        tsf,
         data.assessment_fee ?? 0,
+        book,
+        newNormal,
+        insurance,
+        entrep,
+        totalTc,
+        totalTsf,
+        totalBook,
+        totalNewNormal,
+        totalInsurance,
+        totalEntrep,
         totalApproved,
-        data.status || 'draft',
+        data.status || 'approved',
       ],
     );
     return rows[0];
@@ -105,22 +157,35 @@ export class QMModel {
     const existing = await this.findById(id);
     if (!existing) return null;
 
-    const updatedTotalSlots = data.total_slots ?? existing.total_slots;
-    const updatedTrainingCost = data.training_cost_per_capita ?? Number(existing.training_cost_per_capita);
-    const updatedSupportFund = data.support_fund_per_capita ?? Number(existing.support_fund_per_capita);
-    const updatedAssessmentFee = data.assessment_fee ?? Number(existing.assessment_fee);
-    const computedTotalApproved = updatedTotalSlots * (updatedTrainingCost + updatedSupportFund + updatedAssessmentFee);
+    const slots = data.total_slots !== undefined ? Number(data.total_slots) : Number(existing.total_slots);
+    const tc = data.training_cost_per_capita !== undefined ? Number(data.training_cost_per_capita) : Number(existing.training_cost_per_capita || 0);
+    const tsf = data.support_fund_per_capita !== undefined ? Number(data.support_fund_per_capita) : Number(existing.support_fund_per_capita || 0);
+    const book = data.book_allowance !== undefined ? Number(data.book_allowance) : Number(existing.book_allowance || 0);
+    const newNormal = data.new_normal_assistance !== undefined ? Number(data.new_normal_assistance) : Number(existing.new_normal_assistance || 0);
+    const insurance = data.annual_accident_insurance !== undefined ? Number(data.annual_accident_insurance) : Number(existing.annual_accident_insurance || 0);
+    const entrep = data.entrepreneurship_fee !== undefined ? Number(data.entrepreneurship_fee) : Number(existing.entrepreneurship_fee || 0);
+
+    const totalTc = slots * tc;
+    const totalTsf = slots * tsf;
+    const totalBook = slots * book;
+    const totalNewNormal = slots * newNormal;
+    const totalInsurance = slots * insurance;
+    const totalEntrep = slots * entrep;
+    const totalApproved = totalTc + totalTsf + totalBook + totalNewNormal + totalInsurance + totalEntrep;
 
     const fields: string[] = [];
     const values: unknown[] = [];
     let idx = 1;
 
-    const keys: (keyof Omit<QualificationMap, 'qm_id' | 'created_at' | 'program_name' | 'institution_name'>)[] = [
+    const directKeys: (keyof Omit<QualificationMap, 'qm_id' | 'created_at' | 'program_name' | 'institution_name'>)[] = [
       'program_id',
       'provider_id',
       'rqm_code',
       'nqm_code',
       'pqm_code',
+      'appropriation',
+      'fiscal_year',
+      'allocation',
       'sector',
       'tvet_qualification',
       'qualification_level',
@@ -129,18 +194,35 @@ export class QMModel {
       'training_cost_per_capita',
       'support_fund_per_capita',
       'assessment_fee',
+      'book_allowance',
+      'new_normal_assistance',
+      'annual_accident_insurance',
+      'entrepreneurship_fee',
       'status',
     ];
 
-    for (const key of keys) {
+    for (const key of directKeys) {
       if (data[key] !== undefined) {
         fields.push(`${key} = $${idx++}`);
         values.push(data[key]);
       }
     }
 
+    // Always update computed totals
+    fields.push(`total_training_cost = $${idx++}`);
+    values.push(totalTc);
+    fields.push(`total_support_fund = $${idx++}`);
+    values.push(totalTsf);
+    fields.push(`total_book_allowance = $${idx++}`);
+    values.push(totalBook);
+    fields.push(`total_new_normal_assistance = $${idx++}`);
+    values.push(totalNewNormal);
+    fields.push(`total_annual_accident_insurance = $${idx++}`);
+    values.push(totalInsurance);
+    fields.push(`total_entrepreneurship_fee = $${idx++}`);
+    values.push(totalEntrep);
     fields.push(`total_approved_amount = $${idx++}`);
-    values.push(data.total_approved_amount ?? computedTotalApproved);
+    values.push(totalApproved);
 
     values.push(id);
     await pool.query(

@@ -1,7 +1,11 @@
 import { ProgramModel } from '../models/program.model.js';
-import { ScholarshipProgram } from '../types/domain.js';
+import { ScholarshipProgram, ScholarshipProgramSummary } from '../types/domain.js';
 
 export class ProgramService {
+  static async getAggregatedSummary(fiscalYear?: string): Promise<ScholarshipProgramSummary[]> {
+    return ProgramModel.getAggregatedSummary(fiscalYear);
+  }
+
   static async getAllPrograms(fiscalYear?: number): Promise<ScholarshipProgram[]> {
     return ProgramModel.findAll(fiscalYear);
   }

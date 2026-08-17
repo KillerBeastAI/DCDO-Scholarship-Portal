@@ -59,7 +59,9 @@ export class AccomplishmentModel {
     const droppedMale = data.dropped_male ?? existing?.dropped_male ?? 0;
     const droppedFemale = data.dropped_female ?? existing?.dropped_female ?? 0;
 
-    const perCapitaCost = Number(qm.training_cost_per_capita) + Number(qm.support_fund_per_capita) + Number(qm.assessment_fee);
+    const perCapitaCost = qm.total_slots > 0 
+      ? (Number(qm.total_approved_amount) / qm.total_slots)
+      : (Number(qm.training_cost_per_capita) + Number(qm.support_fund_per_capita));
     const droppedDeduction = data.dropped_amount_deduction ?? (droppedMale + droppedFemale) * perCapitaCost;
 
     const unutilizedSlots = Math.max(0, qm.total_slots - totalEnrolled);

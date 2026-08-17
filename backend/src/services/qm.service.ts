@@ -8,6 +8,7 @@ export class QMService {
     program_id?: string;
     provider_id?: string;
     status?: QMStatus;
+    fiscal_year?: string;
   }): Promise<QualificationMap[]> {
     return QMModel.findAll(filters);
   }
@@ -28,28 +29,34 @@ export class QMService {
     rqm_code?: string | null;
     nqm_code?: string | null;
     pqm_code?: string | null;
+    appropriation?: string;
+    fiscal_year?: string;
+    allocation?: string;
     sector: string;
     tvet_qualification: string;
-    qualification_level: string;
-    delivery_mode: string;
+    qualification_level?: string;
+    delivery_mode?: string;
     total_slots: number;
     training_cost_per_capita: number;
     support_fund_per_capita?: number;
     assessment_fee?: number;
-    total_approved_amount?: number;
+    book_allowance?: number;
+    new_normal_assistance?: number;
+    annual_accident_insurance?: number;
+    entrepreneurship_fee?: number;
     status?: QMStatus;
   }): Promise<QualificationMap> {
     // Validate foreign keys
     await ProgramService.getProgramById(data.program_id);
     await ProviderService.getProviderById(data.provider_id);
 
-    if (!data.sector || !data.tvet_qualification || !data.qualification_level || !data.delivery_mode) {
-      const err = new Error('Missing required qualification map fields') as Error & { statusCode?: number };
+    if (!data.sector || !data.tvet_qualification) {
+      const err = new Error('Missing required qualification map fields: sector and TVET qualification title are required.') as Error & { statusCode?: number };
       err.statusCode = 400;
       throw err;
     }
 
-    if (data.total_slots < 0 || data.training_cost_per_capita < 0) {
+    if (Number(data.total_slots) < 0 || Number(data.training_cost_per_capita) < 0) {
       const err = new Error('Total slots and training cost per capita must be non-negative') as Error & { statusCode?: number };
       err.statusCode = 400;
       throw err;

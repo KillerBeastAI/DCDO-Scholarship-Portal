@@ -59,29 +59,43 @@ CREATE INDEX IF NOT EXISTS idx_programs_fy ON scholarship_programs (fiscal_year)
 
 -- ── 4. qualification_maps ───────────────────────────────────
 CREATE TABLE IF NOT EXISTS qualification_maps (
-    qm_id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    program_id               UUID          NOT NULL REFERENCES scholarship_programs(program_id) ON DELETE CASCADE,
-    provider_id              UUID          NOT NULL REFERENCES training_providers(provider_id) ON DELETE CASCADE,
-    rqm_code                 VARCHAR(50),
-    nqm_code                 VARCHAR(50),
-    pqm_code                 VARCHAR(50),
-    sector                   VARCHAR(150)  NOT NULL,
-    tvet_qualification       VARCHAR(255)  NOT NULL,
-    qualification_level      VARCHAR(30)   NOT NULL,
-    delivery_mode            VARCHAR(50)   NOT NULL,
-    total_slots              INT           NOT NULL CHECK (total_slots >= 0),
-    training_cost_per_capita NUMERIC(12,2) NOT NULL,
-    support_fund_per_capita  NUMERIC(12,2) NOT NULL DEFAULT 0,
-    assessment_fee           NUMERIC(12,2) NOT NULL DEFAULT 0,
-    total_approved_amount    NUMERIC(15,2) NOT NULL DEFAULT 0,
-    status                   VARCHAR(20)   NOT NULL DEFAULT 'draft'
-                                 CHECK (status IN ('draft', 'approved', 'completed', 'cancelled')),
-    created_at               TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+    qm_id                           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    program_id                      UUID          NOT NULL REFERENCES scholarship_programs(program_id) ON DELETE CASCADE,
+    provider_id                     UUID          NOT NULL REFERENCES training_providers(provider_id) ON DELETE CASCADE,
+    rqm_code                        VARCHAR(50),
+    nqm_code                        VARCHAR(50),
+    pqm_code                        VARCHAR(50),
+    appropriation                   VARCHAR(50)   DEFAULT 'Current',
+    fiscal_year                     VARCHAR(20)   DEFAULT 'FY 2026',
+    allocation                      VARCHAR(50)   DEFAULT 'CO',
+    sector                          VARCHAR(150)  NOT NULL,
+    tvet_qualification              VARCHAR(255)  NOT NULL,
+    qualification_level             VARCHAR(30)   NOT NULL,
+    delivery_mode                   VARCHAR(50)   NOT NULL,
+    total_slots                     INT           NOT NULL CHECK (total_slots >= 0),
+    training_cost_per_capita        NUMERIC(12,2) NOT NULL DEFAULT 0,
+    support_fund_per_capita         NUMERIC(12,2) NOT NULL DEFAULT 0,
+    assessment_fee                  NUMERIC(12,2) NOT NULL DEFAULT 0,
+    book_allowance                  NUMERIC(12,2) NOT NULL DEFAULT 0,
+    new_normal_assistance          NUMERIC(12,2) NOT NULL DEFAULT 0,
+    annual_accident_insurance      NUMERIC(12,2) NOT NULL DEFAULT 0,
+    entrepreneurship_fee           NUMERIC(12,2) NOT NULL DEFAULT 0,
+    total_training_cost            NUMERIC(15,2) NOT NULL DEFAULT 0,
+    total_support_fund             NUMERIC(15,2) NOT NULL DEFAULT 0,
+    total_book_allowance           NUMERIC(15,2) NOT NULL DEFAULT 0,
+    total_new_normal_assistance    NUMERIC(15,2) NOT NULL DEFAULT 0,
+    total_annual_accident_insurance NUMERIC(15,2) NOT NULL DEFAULT 0,
+    total_entrepreneurship_fee     NUMERIC(15,2) NOT NULL DEFAULT 0,
+    total_approved_amount          NUMERIC(15,2) NOT NULL DEFAULT 0,
+    status                          VARCHAR(20)   NOT NULL DEFAULT 'approved'
+                                        CHECK (status IN ('draft', 'approved', 'completed', 'cancelled')),
+    created_at                      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_qm_program  ON qualification_maps (program_id);
 CREATE INDEX IF NOT EXISTS idx_qm_provider ON qualification_maps (provider_id);
 CREATE INDEX IF NOT EXISTS idx_qm_status   ON qualification_maps (status);
+CREATE INDEX IF NOT EXISTS idx_qm_fy       ON qualification_maps (fiscal_year);
 
 -- ── 5. physical_accomplishments ─────────────────────────────
 CREATE TABLE IF NOT EXISTS physical_accomplishments (

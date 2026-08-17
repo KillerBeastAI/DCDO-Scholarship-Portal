@@ -1,7 +1,41 @@
 import { pool } from '../config/db.js';
-import { ScholarshipProgram } from '../types/domain.js';
+import { ScholarshipProgram, ScholarshipProgramSummary } from '../types/domain.js';
 
 export class ProgramModel {
+  static async getAggregatedSummary(fiscalYear?: string): Promise<ScholarshipProgramSummary[]> {
+    const conditions: string[] = [];
+    const values: unknown[] = [];
+    let idx = 1;
+
+    if (fiscalYear && fiscalYear !== 'all') {
+      conditions.push(`(qm.fiscal_year ILIKE $${idx} OR CONCAT('FY ', p.fiscal_year) ILIKE $${idx})`);
+      values.push(`%${fiscalYear}%`);
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    const { rows } = await pool.query<ScholarshipProgramSummary>(
+      `SELECT 
+        COALESCE(qm.fiscal_year, CONCAT('FY ', p.fiscal_year)) as fiscal_year,
+        p.program_name,
+        COALESCE(SUM(qm.total_slots), 0)::int as approved_slots,
+        COALESCE(SUM(qm.total_approved_amount), 0)::float as amount,
+        COALESCE(SUM(pa.enrolled_male + pa.enrolled_female), 0)::int as enrolled,
+        COALESCE(SUM(pa.dropped_male + pa.dropped_female), 0)::int as dropouts,
+        COALESCE(SUM(pa.graduated_completed_male + pa.graduated_completed_female), 0)::int as graduates,
+        COALESCE(SUM(pa.assessed_male + pa.assessed_female), 0)::int as assessed,
+        COALESCE(SUM(pa.employed_male + pa.employed_female), 0)::int as employed
+       FROM scholarship_programs p
+       JOIN qualification_maps qm ON qm.program_id = p.program_id
+       LEFT JOIN physical_accomplishments pa ON pa.qm_id = qm.qm_id
+       ${whereClause}
+       GROUP BY COALESCE(qm.fiscal_year, CONCAT('FY ', p.fiscal_year)), p.program_name
+       ORDER BY fiscal_year DESC, p.program_name ASC`,
+      values,
+    );
+    return rows;
+  }
+
   static async findAll(fiscalYear?: number): Promise<ScholarshipProgram[]> {
     if (fiscalYear) {
       const { rows } = await pool.query<ScholarshipProgram>(

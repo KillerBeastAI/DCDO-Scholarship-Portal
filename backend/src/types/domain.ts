@@ -50,20 +50,45 @@ export interface QualificationMap {
   rqm_code?: string | null;
   nqm_code?: string | null;
   pqm_code?: string | null;
+  appropriation?: string;
+  fiscal_year?: string;
+  allocation?: string;
   sector: string;
   tvet_qualification: string;
-  qualification_level: string;
-  delivery_mode: string;
+  qualification_level?: string;
+  delivery_mode?: string;
   total_slots: number;
   training_cost_per_capita: number;
   support_fund_per_capita: number;
   assessment_fee: number;
+  book_allowance?: number;
+  new_normal_assistance?: number;
+  annual_accident_insurance?: number;
+  entrepreneurship_fee?: number;
+  total_training_cost?: number;
+  total_support_fund?: number;
+  total_book_allowance?: number;
+  total_new_normal_assistance?: number;
+  total_annual_accident_insurance?: number;
+  total_entrepreneurship_fee?: number;
   total_approved_amount: number;
   status: QMStatus;
   created_at: Date;
   // Joined fields
   program_name?: string;
   institution_name?: string;
+}
+
+export interface ScholarshipProgramSummary {
+  fiscal_year: string | number;
+  program_name: string;
+  approved_slots: number;
+  amount: number;
+  enrolled: number;
+  dropouts: number;
+  graduates: number;
+  assessed: number;
+  employed: number;
 }
 
 export interface PhysicalAccomplishment {
