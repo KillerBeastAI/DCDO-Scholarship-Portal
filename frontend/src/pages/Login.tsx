@@ -59,13 +59,11 @@ export const Login: React.FC = () => {
             <label htmlFor="email">Email Address</label>
             <input
               id="email"
-              name="email"
               type="email"
               className="form-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="user@tesda.gov.ph"
-              autoComplete="username"
               required
             />
           </div>
@@ -74,13 +72,11 @@ export const Login: React.FC = () => {
             <label htmlFor="password">Password</label>
             <input
               id="password"
-              name="password"
               type="password"
               className="form-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              autoComplete="current-password"
               required
             />
           </div>

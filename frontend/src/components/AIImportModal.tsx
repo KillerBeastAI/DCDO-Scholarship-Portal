@@ -206,15 +206,7 @@ export const AIImportModal: React.FC<Props> = ({ onClose, onImported }) => {
               onDrop={handleDrop}
               onClick={() => fileRef.current?.click()}
             >
-              <input
-                ref={fileRef}
-                id="ai-modal-file-input"
-                name="aiModalFileInput"
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                hidden
-                onChange={handleFileChange}
-              />
+              <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" hidden onChange={handleFileChange} />
               <div className="aimodal-dropzone-icon">📊</div>
               <div className="aimodal-dropzone-text">
                 <strong>Drag & drop your Excel file here</strong>

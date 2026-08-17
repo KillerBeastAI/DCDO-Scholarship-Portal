@@ -243,53 +243,42 @@ export const Users: React.FC = () => {
             </div>
             <form onSubmit={handleSave} className="modal-form">
               <div className="form-group">
-                <label htmlFor="user-username">Username</label>
+                <label>Username</label>
                 <input
-                  id="user-username"
-                  name="username"
                   className="form-input"
                   value={form.username}
                   onChange={(e) => setForm({ ...form, username: e.target.value })}
                   placeholder="e.g. juan.delacruz"
-                  autoComplete="username"
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="user-email">Email Address</label>
+                <label>Email Address</label>
                 <input
-                  id="user-email"
-                  name="email"
                   type="email"
                   className="form-input"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="user@davao.gov.ph"
-                  autoComplete="email"
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="user-dept">Department</label>
+                <label>Department</label>
                 <input
-                  id="user-dept"
-                  name="department"
                   className="form-input"
                   value={form.department}
                   onChange={(e) => setForm({ ...form, department: e.target.value })}
                   placeholder="e.g. City Social Welfare and Development Office"
-                  autoComplete="organization"
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="user-role">Role</label>
+                <label>Role</label>
                 <select
-                  id="user-role"
-                  name="role"
                   className="form-input"
                   value={form.role}
                   onChange={(e) => setForm({ ...form, role: e.target.value as UserRole })}
@@ -301,16 +290,13 @@ export const Users: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="user-password">{editingId ? 'New Password (leave blank to keep current)' : 'Password'}</label>
+                <label>{editingId ? 'New Password (leave blank to keep current)' : 'Password'}</label>
                 <input
-                  id="user-password"
-                  name="password"
                   type="password"
                   className="form-input"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   placeholder="••••••••"
-                  autoComplete="new-password"
                   required={!editingId}
                 />
               </div>
