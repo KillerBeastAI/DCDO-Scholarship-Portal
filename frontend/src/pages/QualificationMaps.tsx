@@ -193,6 +193,7 @@ export const QualificationMaps: React.FC = () => {
       (p) =>
         (p.institution_name || '').toLowerCase().includes(q) ||
         (p.sector || '').toLowerCase().includes(q) ||
+        (p.type_of_program || '').toLowerCase().includes(q) ||
         (p.qualification_title || '').toLowerCase().includes(q)
     );
   }, [providers, providerSearchQuery]);
@@ -874,14 +875,20 @@ export const QualificationMaps: React.FC = () => {
                               {selectedProvider.institution_name}
                             </span>
                             <span className="qm-provider-trigger-sub">
-                              <span>🏢 {selectedProvider.sector}</span>
-                              <span>•</span>
-                              <span>🎓 {selectedProvider.qualification_title}</span>
+                              {selectedProvider.sector && <span>🏢 {selectedProvider.sector}</span>}
+                              {selectedProvider.type_of_program && (
+                                <span className="qm-provider-badge-program-type">
+                                  {selectedProvider.type_of_program}
+                                </span>
+                              )}
+                              {selectedProvider.qualification_title && (
+                                <span>🎓 {selectedProvider.qualification_title}</span>
+                              )}
                             </span>
                           </div>
                         ) : (
                           <span className="qm-provider-trigger-placeholder">
-                            🔍 Search and select training provider & qualification...
+                            🔍 Search provider, sector, program type, or qualification...
                           </span>
                         )}
                         <span className={`qm-provider-trigger-arrow ${isProviderDropdownOpen ? 'open' : ''}`}>
@@ -899,7 +906,7 @@ export const QualificationMaps: React.FC = () => {
                               ref={providerSearchInputRef}
                               type="text"
                               className="qm-provider-search-input"
-                              placeholder="Search provider, sector, or qualification..."
+                              placeholder="Search provider, sector, program type, qualification..."
                               value={providerSearchQuery}
                               onChange={(e) => setProviderSearchQuery(e.target.value)}
                               onClick={(e) => e.stopPropagation()}
@@ -936,10 +943,19 @@ export const QualificationMaps: React.FC = () => {
                                       {pr.institution_name}
                                     </div>
                                     <div className="qm-provider-option-meta">
-                                      <span className="qm-provider-option-sector">{pr.sector}</span>
-                                      <span className="qm-provider-option-qual">
-                                        🎓 {pr.qualification_title}
-                                      </span>
+                                      {pr.sector && (
+                                        <span className="qm-provider-option-sector">{pr.sector}</span>
+                                      )}
+                                      {pr.type_of_program && (
+                                        <span className="qm-provider-option-program-type">
+                                          {pr.type_of_program}
+                                        </span>
+                                      )}
+                                      {pr.qualification_title && (
+                                        <span className="qm-provider-option-qual">
+                                          🎓 {pr.qualification_title}
+                                        </span>
+                                      )}
                                     </div>
                                   </div>
                                 );
