@@ -648,6 +648,8 @@ export const Providers: React.FC = () => {
           <div className="search-input-wrapper">
             <span className="search-icon">🔍</span>
             <input
+              id="providers-search-input"
+              name="search"
               type="text"
               className="search-input-field"
               placeholder="Search provider, qualification, PRN, sector, email..."
@@ -658,6 +660,8 @@ export const Providers: React.FC = () => {
 
           <div className="quick-filters-group">
             <select
+              id="providers-quick-status"
+              name="quickStatus"
               className="quick-select"
               value={quickStatus}
               onChange={(e) => setQuickStatus(e.target.value)}
@@ -672,6 +676,8 @@ export const Providers: React.FC = () => {
             </select>
 
             <select
+              id="providers-quick-classification"
+              name="quickClassification"
               className="quick-select"
               value={quickClassification}
               onChange={(e) => setQuickClassification(e.target.value)}
@@ -686,6 +692,8 @@ export const Providers: React.FC = () => {
             </select>
 
             <select
+              id="providers-quick-program-type"
+              name="quickProgramType"
               className="quick-select"
               value={quickProgramType}
               onChange={(e) => setQuickProgramType(e.target.value)}
@@ -700,6 +708,8 @@ export const Providers: React.FC = () => {
             </select>
 
             <select
+              id="providers-quick-sector"
+              name="quickSector"
               className="quick-select"
               value={quickSector}
               onChange={(e) => setQuickSector(e.target.value)}
