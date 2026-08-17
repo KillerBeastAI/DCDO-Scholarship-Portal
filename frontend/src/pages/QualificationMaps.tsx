@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import type { QualificationMap, ScholarshipProgram, TrainingProvider } from '../types';
@@ -35,6 +35,12 @@ export const QualificationMaps: React.FC = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Searchable Provider Selector state
+  const [providerSearchQuery, setProviderSearchQuery] = useState<string>('');
+  const [isProviderDropdownOpen, setIsProviderDropdownOpen] = useState<boolean>(false);
+  const providerSelectorRef = useRef<HTMLDivElement>(null);
+  const providerSearchInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     program_name: SCHOLARSHIP_PROGRAMS_LIST[0],
@@ -84,6 +90,29 @@ export const QualificationMaps: React.FC = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, fiscalYearFilter, programFilter, pageSize]);
+
+  // Close provider selector dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        providerSelectorRef.current &&
+        !providerSelectorRef.current.contains(event.target as Node)
+      ) {
+        setIsProviderDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Focus search input when provider dropdown opens
+  useEffect(() => {
+    if (isProviderDropdownOpen && providerSearchInputRef.current) {
+      providerSearchInputRef.current.focus();
+    }
+  }, [isProviderDropdownOpen]);
 
   // Program condition checks
   const isPesfa = form.program_name.includes('PESFA') || form.program_name.includes('Private Education');
@@ -139,18 +168,39 @@ export const QualificationMaps: React.FC = () => {
     }));
   };
 
-  // Auto-fill sector and qualification from selected provider
-  const handleProviderChange = (provId: string) => {
-    const prov = providers.find((p) => p.provider_id === provId);
+  // Selecting a specific training provider qualification record
+  const handleProviderSelect = (prov: TrainingProvider) => {
     setForm((prev) => ({
       ...prev,
-      provider_id: provId,
-      sector: prov?.sector || prev.sector || 'Information and Communications Technology (ICT)',
-      tvet_qualification: prov?.qualification_title || prev.tvet_qualification || '',
+      provider_id: prov.provider_id,
+      sector: prov.sector || prev.sector || 'Information and Communications Technology (ICT)',
+      tvet_qualification: prov.qualification_title || prev.tvet_qualification || '',
     }));
+    setIsProviderDropdownOpen(false);
+    setProviderSearchQuery('');
   };
 
+  // Selected provider object derived from form.provider_id
+  const selectedProvider = useMemo(() => {
+    return providers.find((p) => p.provider_id === form.provider_id);
+  }, [providers, form.provider_id]);
+
+  // Filtered providers list for searchable dropdown
+  const filteredProviders = useMemo(() => {
+    if (!providerSearchQuery.trim()) return providers;
+    const q = providerSearchQuery.toLowerCase().trim();
+    return providers.filter(
+      (p) =>
+        (p.institution_name || '').toLowerCase().includes(q) ||
+        (p.sector || '').toLowerCase().includes(q) ||
+        (p.qualification_title || '').toLowerCase().includes(q)
+    );
+  }, [providers, providerSearchQuery]);
+
   const handleOpenModal = (qm?: QualificationMap) => {
+    setProviderSearchQuery('');
+    setIsProviderDropdownOpen(false);
+
     if (qm) {
       setEditingId(qm.qm_id);
       const progName = qm.program_name || SCHOLARSHIP_PROGRAMS_LIST[0];
@@ -201,6 +251,11 @@ export const QualificationMaps: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.provider_id) {
+      alert('Please select a Training Provider and Qualification.');
+      return;
+    }
+
     setSaving(true);
     try {
       let prog = programs.find((p) => p.program_name === form.program_name);
@@ -797,28 +852,106 @@ export const QualificationMaps: React.FC = () => {
                     />
                   </div>
 
-                  {/* Training Provider */}
-                  <div className="qm-form-group">
-                    <label htmlFor="qm-form-provider">
-                      Training Provider <span className="required-star">*</span>
+                  {/* ── Searchable Training Provider Record Selector ── */}
+                  <div className="qm-form-group" ref={providerSelectorRef}>
+                    <label htmlFor="qm-form-provider-btn">
+                      Training Provider & TVET Qualification <span className="required-star">*</span>
                     </label>
-                    <select
-                      id="qm-form-provider"
-                      className="qm-form-select"
-                      value={form.provider_id}
-                      onChange={(e) => handleProviderChange(e.target.value)}
-                      required
-                    >
-                      <option value="">Select Training Provider</option>
-                      {providers.map((pr) => (
-                        <option key={pr.provider_id} value={pr.provider_id}>
-                          {pr.institution_name}
-                        </option>
-                      ))}
-                    </select>
+
+                    <div className="qm-provider-selector-wrap">
+                      {/* Trigger Button */}
+                      <button
+                        type="button"
+                        id="qm-form-provider-btn"
+                        className={`qm-provider-trigger ${isProviderDropdownOpen ? 'open' : ''}`}
+                        onClick={() => setIsProviderDropdownOpen(!isProviderDropdownOpen)}
+                        aria-expanded={isProviderDropdownOpen}
+                        aria-haspopup="listbox"
+                      >
+                        {selectedProvider ? (
+                          <div className="qm-provider-trigger-info">
+                            <span className="qm-provider-trigger-title">
+                              {selectedProvider.institution_name}
+                            </span>
+                            <span className="qm-provider-trigger-sub">
+                              <span>🏢 {selectedProvider.sector}</span>
+                              <span>•</span>
+                              <span>🎓 {selectedProvider.qualification_title}</span>
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="qm-provider-trigger-placeholder">
+                            🔍 Search and select training provider & qualification...
+                          </span>
+                        )}
+                        <span className={`qm-provider-trigger-arrow ${isProviderDropdownOpen ? 'open' : ''}`}>
+                          ▼
+                        </span>
+                      </button>
+
+                      {/* Dropdown Menu */}
+                      {isProviderDropdownOpen && (
+                        <div className="qm-provider-dropdown" role="listbox">
+                          {/* Search Filter Box inside Dropdown */}
+                          <div className="qm-provider-search-box">
+                            <span className="qm-provider-search-icon">🔍</span>
+                            <input
+                              ref={providerSearchInputRef}
+                              type="text"
+                              className="qm-provider-search-input"
+                              placeholder="Search provider, sector, or qualification..."
+                              value={providerSearchQuery}
+                              onChange={(e) => setProviderSearchQuery(e.target.value)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                            {providerSearchQuery && (
+                              <button
+                                type="button"
+                                className="qm-provider-search-clear"
+                                onClick={() => setProviderSearchQuery('')}
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Options List */}
+                          <div className="qm-provider-options-list">
+                            {filteredProviders.length === 0 ? (
+                              <div className="qm-provider-empty-msg">
+                                No matching provider or qualification found for "{providerSearchQuery}".
+                              </div>
+                            ) : (
+                              filteredProviders.map((pr) => {
+                                const isSelected = pr.provider_id === form.provider_id;
+                                return (
+                                  <div
+                                    key={pr.provider_id}
+                                    className={`qm-provider-option-item ${isSelected ? 'selected' : ''}`}
+                                    onClick={() => handleProviderSelect(pr)}
+                                    role="option"
+                                    aria-selected={isSelected}
+                                  >
+                                    <div className="qm-provider-option-title">
+                                      {pr.institution_name}
+                                    </div>
+                                    <div className="qm-provider-option-meta">
+                                      <span className="qm-provider-option-sector">{pr.sector}</span>
+                                      <span className="qm-provider-option-qual">
+                                        🎓 {pr.qualification_title}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              })
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Sector */}
+                  {/* Sector (Auto-populated from selected record, editable) */}
                   <div className="qm-form-group">
                     <label htmlFor="qm-form-sector">
                       Sector <span className="required-star">*</span>
@@ -834,7 +967,7 @@ export const QualificationMaps: React.FC = () => {
                     />
                   </div>
 
-                  {/* TVET Qualification Title */}
+                  {/* TVET Qualification Title (Auto-populated from selected record, editable) */}
                   <div className="qm-form-group">
                     <label htmlFor="qm-form-qualification">
                       TVET Qualification Title <span className="required-star">*</span>
