@@ -1,40 +1,866 @@
-.progress-bar-container {
-  width: 100%;
-  height: 8px;
-  background-color: var(--border-color);
-  border-radius: 9999px;
-  overflow: hidden;
-  margin-top: 4px;
-}
+/* ─── Scholarship Programs & Budget Allocations — Modern Government MIS Theme ─── */
 
-.progress-bar-fill {
-  height: 100%;
-  background-color: var(--primary);
-  border-radius: 9999px;
-  transition: width 0.3s ease;
-}
-
-.year-pills {
+.programs-page {
   display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
+  flex-direction: column;
+  gap: 22px;
+  max-width: 100%;
+  animation: progFadeIn 0.25s ease-out;
 }
 
-.year-pill {
-  padding: 6px 14px;
-  border-radius: 9999px;
-  font-size: 0.85rem;
+@keyframes progFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── 1. Page Header ─────────────────────────────────────────────── */
+.prog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-bottom: 2px;
+}
+
+.prog-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prog-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.prog-title-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(37, 99, 235, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  font-size: 1.1rem;
+}
+
+.prog-subtitle {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  font-weight: 400;
+  margin: 0;
+}
+
+.prog-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.prog-refresh-btn {
+  background: #111827;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.prog-refresh-btn:hover {
+  background: #1e293b;
+  color: #f8fafc;
+  border-color: #475569;
+}
+
+/* ─── 2. KPI Metrics Grid (5 Cards in 1 row on Desktop) ───────────── */
+.prog-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+
+.prog-kpi-card {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.prog-kpi-card:hover {
+  border-color: #374151;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.prog-kpi-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.prog-kpi-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.prog-kpi-value {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #f8fafc;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.prog-kpi-subtext {
+  font-size: 0.72rem;
+  color: #64748b;
   font-weight: 500;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-card);
-  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.prog-kpi-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.prog-kpi--slots .prog-kpi-icon {
+  background: rgba(99, 102, 241, 0.12);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.prog-kpi--budget .prog-kpi-icon {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.prog-kpi--enrolled .prog-kpi-icon {
+  background: rgba(59, 130, 246, 0.12);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.prog-kpi--graduates .prog-kpi-icon {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.prog-kpi--employed .prog-kpi-icon {
+  background: rgba(236, 72, 153, 0.12);
+  color: #f472b6;
+  border: 1px solid rgba(236, 72, 153, 0.25);
+}
+
+/* ─── 3. Filter & Search Toolbar ─────────────────────────────────── */
+.prog-toolbar {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.prog-toolbar-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  flex: 1;
+}
+
+.prog-search-wrapper {
+  position: relative;
+  min-width: 260px;
+  flex: 1;
+  max-width: 380px;
+}
+
+.prog-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.prog-search-input {
+  width: 100%;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 9px 36px 9px 34px;
+  color: #f8fafc;
+  font-size: 0.85rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.prog-search-input:focus {
+  border-color: #3b82f6;
+  background: #090d16;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.prog-search-input::placeholder {
+  color: #64748b;
+}
+
+.prog-search-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.prog-search-clear:hover {
+  color: #f8fafc;
+  background: #334155;
+}
+
+.prog-select-filter {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 9px 14px;
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  outline: none;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.year-pill.active {
-  background-color: var(--primary);
-  color: #ffffff;
-  border-color: var(--primary);
+.prog-select-filter:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.prog-select-filter option {
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+/* Fiscal Year Tab Pills in Toolbar */
+.prog-fy-pills {
+  display: flex;
+  background: #0f172a;
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  gap: 2px;
+}
+
+.prog-fy-pill {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
   font-weight: 600;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.prog-fy-pill:hover {
+  color: #f8fafc;
+}
+
+.prog-fy-pill.active {
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+}
+
+.prog-btn-reset {
+  background: transparent;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.prog-btn-reset:hover {
+  background: #1e293b;
+  color: #f8fafc;
+  border-color: #475569;
+}
+
+.prog-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.prog-badge-count {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 500;
+  background: #0f172a;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #1f2937;
+  white-space: nowrap;
+}
+
+/* ─── 4. Main Programs Table ─────────────────────────────────────── */
+.prog-table-card {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.prog-table-header-title {
+  padding: 16px 20px;
+  background: #0f172a;
+  border-bottom: 1px solid #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.prog-table-title-text {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prog-table-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.prog-table {
+  width: 100%;
+  min-width: 1050px;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.prog-table th {
+  background: #0f172a;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 12px 16px;
+  border-bottom: 1px solid #1f2937;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.prog-th-center {
+  text-align: center !important;
+}
+
+.prog-th-right {
+  text-align: right !important;
+}
+
+.prog-th-budget {
+  color: #38bdf8 !important;
+}
+
+.prog-table tbody tr {
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid rgba(31, 41, 55, 0.7);
+}
+
+.prog-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.prog-table tbody tr:hover {
+  background-color: rgba(30, 41, 59, 0.5);
+}
+
+.prog-table td {
+  padding: 14px 16px;
+  vertical-align: middle;
+  color: #cbd5e1;
+}
+
+.prog-td-program {
+  font-weight: 600;
+  color: #f8fafc;
+  min-width: 260px;
+  line-height: 1.4;
+}
+
+.prog-td-slots {
+  text-align: center;
+  font-weight: 700;
+}
+
+.prog-slots-chip {
+  display: inline-block;
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #f1f5f9;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+  min-width: 38px;
+}
+
+.prog-td-amount {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  font-weight: 700;
+  color: #38bdf8;
+}
+
+.prog-td-numeric {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.prog-td-dropouts {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.prog-td-dropouts.has-dropouts {
+  color: #f87171;
+  font-weight: 600;
+}
+
+.prog-td-employed {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: #4ade80;
+}
+
+/* ─── Table Summary Totals Row ──────────────────────────────────── */
+.prog-tr-total {
+  background: #0c1322 !important;
+  border-top: 2px solid #1e3a8a !important;
+  font-weight: 700;
+}
+
+.prog-tr-total td {
+  padding: 14px 16px;
+  color: #f8fafc;
+}
+
+.prog-tr-total-label {
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #93c5fd;
+}
+
+/* Badges */
+.prog-fy-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.prog-fy-badge--current {
+  background: rgba(37, 99, 235, 0.15);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.prog-fy-badge--continuing {
+  background: rgba(147, 51, 234, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+/* ─── 5. Program Performance Section ─────────────────────────────── */
+.prog-performance-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.prog-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.prog-section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.prog-section-badge {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.prog-perf-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.prog-perf-card {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.prog-perf-card:hover {
+  border-color: #374151;
+  transform: translateY(-1px);
+}
+
+.prog-perf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.prog-perf-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+}
+
+.prog-perf-value {
+  font-size: 1.45rem;
+  font-weight: 900;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.prog-perf-bar-wrap {
+  width: 100%;
+  height: 6px;
+  background: #1e293b;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.prog-perf-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.prog-perf-subtext {
+  font-size: 0.75rem;
+  color: #64748b;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.prog-perf--enrollment .prog-perf-value { color: #60a5fa; }
+.prog-perf--enrollment .prog-perf-bar-fill { background: #3b82f6; }
+
+.prog-perf--graduation .prog-perf-value { color: #fbbf24; }
+.prog-perf--graduation .prog-perf-bar-fill { background: #f59e0b; }
+
+.prog-perf--assessment .prog-perf-value { color: #a78bfa; }
+.prog-perf--assessment .prog-perf-bar-fill { background: #8b5cf6; }
+
+.prog-perf--employment .prog-perf-value { color: #4ade80; }
+.prog-perf--employment .prog-perf-bar-fill { background: #22c55e; }
+
+/* ─── 6. Budget Overview Banner ──────────────────────────────────── */
+.prog-budget-banner {
+  background: linear-gradient(135deg, #0c1322 0%, #090d16 100%);
+  border: 1px solid #1e3a8a;
+  border-radius: 12px;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.prog-budget-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prog-budget-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #93c5fd;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.prog-budget-desc {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.prog-budget-stats {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.prog-budget-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: right;
+}
+
+.prog-budget-stat-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+.prog-budget-stat-value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #38bdf8;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── 7. Empty & Loading States ──────────────────────────────────── */
+.prog-empty-state {
+  text-align: center;
+  padding: 50px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.prog-empty-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem;
+  color: #94a3b8;
+}
+
+.prog-empty-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0;
+}
+
+.prog-empty-desc {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  max-width: 360px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.prog-loading-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 12px;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.prog-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(59, 130, 246, 0.2);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: progSpin 0.8s linear infinite;
+}
+
+@keyframes progSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error State */
+.prog-error-banner {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #fca5a5;
+  font-size: 0.875rem;
+}
+
+.prog-error-btn {
+  background: #dc2626;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.prog-error-btn:hover {
+  background: #b91c1c;
+}
+
+/* ─── 8. Responsive Breakpoints ──────────────────────────────────── */
+@media (max-width: 1280px) {
+  .prog-kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .prog-perf-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 860px) {
+  .prog-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .prog-perf-grid {
+    grid-template-columns: 1fr;
+  }
+  .prog-budget-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .prog-budget-stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .prog-budget-stat-item {
+    text-align: left;
+  }
+}
+
+@media (max-width: 640px) {
+  .prog-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .prog-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  .prog-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .prog-toolbar-left {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .prog-search-wrapper {
+    max-width: 100%;
+  }
+  .prog-fy-pills {
+    width: 100%;
+    overflow-x: auto;
+  }
+  .prog-fy-pill {
+    flex: 1;
+    text-align: center;
+  }
 }
