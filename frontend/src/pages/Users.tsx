@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import type { User, UserRole } from '../types';
 
 export const Users: React.FC = () => {
+  const { user: currentUser, updateUser: updateAuthUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -68,7 +70,10 @@ export const Users: React.FC = () => {
       if (form.password) payload.password = form.password;
 
       if (editingId) {
-        await api.put(`/users/${editingId}`, payload);
+        const { data } = await api.put<{ data: User }>(`/users/${editingId}`, payload);
+        if (currentUser && currentUser.user_id === editingId) {
+          updateAuthUser(data.data);
+        }
       } else {
         await api.post('/users', payload);
       }

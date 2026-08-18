@@ -45,6 +45,7 @@ export class UserService {
     id: string,
     data: Partial<{
       username: string;
+      email: string;
       department: string;
       role: UserRole;
       password?: string;
@@ -52,9 +53,19 @@ export class UserService {
   ): Promise<User> {
     await this.getUserById(id);
 
+    if (data.email) {
+      const existing = await UserModel.findByEmail(data.email);
+      if (existing && existing.user_id !== id) {
+        const err = new Error(`User with email '${data.email}' already exists`) as Error & { statusCode?: number };
+        err.statusCode = 400;
+        throw err;
+      }
+    }
+
     const password_hash = data.password ? await hashPassword(data.password) : undefined;
     const updated = await UserModel.update(id, {
       username: data.username,
+      email: data.email,
       department: data.department,
       role: data.role,
       password_hash,

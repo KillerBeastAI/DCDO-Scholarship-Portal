@@ -61,6 +61,7 @@ export class UserModel {
     id: string,
     data: Partial<{
       username: string;
+      email: string;
       department: string;
       role: UserRole;
       password_hash: string;
@@ -73,6 +74,10 @@ export class UserModel {
     if (data.username !== undefined) {
       fields.push(`username = $${idx++}`);
       values.push(data.username);
+    }
+    if (data.email !== undefined) {
+      fields.push(`email = $${idx++}`);
+      values.push(data.email);
     }
     if (data.department !== undefined) {
       fields.push(`department = $${idx++}`);
