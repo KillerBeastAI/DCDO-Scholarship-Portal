@@ -10,7 +10,9 @@ export const Layout: React.FC = () => {
     <div className="layout-container">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <div className="seal-icon">DC</div>
+          <div className="seal-icon">
+            <img src="/tesda-logo.png" alt="TESDA Logo" className="sidebar-logo-img" />
+          </div>
           <div>
             <div className="sidebar-title">Davao City</div>
             <div className="sidebar-subtitle">Scholarship Portal</div>
