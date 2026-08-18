@@ -1,51 +1,291 @@
+/* Dashboard root */
+.dashboard-root {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.dashboard-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-muted);
+  padding: 48px 0;
+  font-size: 0.95rem;
+}
+
+.dashboard-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── KPI Grid ── */
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 24px;
-  margin-bottom: 32px;
+  gap: 20px;
 }
 
 .kpi-card {
   padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.kpi-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.kpi-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .kpi-title {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
 .kpi-value {
   font-size: 2rem;
   font-weight: 800;
   color: var(--text-main);
+  line-height: 1.1;
+}
+
+.kpi-value--primary {
+  font-size: 1.5rem;
+  color: var(--primary-hover);
 }
 
 .kpi-sub {
   font-size: 0.8rem;
   color: var(--text-muted);
+  margin-top: 2px;
 }
 
-.dashboard-sections {
+/* Progress bar in KPI card */
+.kpi-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kpi-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.kpi-progress-label strong {
+  color: var(--text-main);
+}
+
+.progress-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 99px;
+  background: var(--border-color);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-fill--primary {
+  background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+}
+
+.progress-fill--accent {
+  background: linear-gradient(90deg, var(--accent), #f59e0b);
+}
+
+/* ── Charts Row ── */
+.dashboard-charts {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 }
 
-.section-card {
+@media (max-width: 900px) {
+  .dashboard-charts {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-card {
   padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.section-header {
-  margin-bottom: 20px;
+.chart-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.section-title {
-  font-size: 1.1rem;
+.chart-title {
+  font-size: 1rem;
   font-weight: 700;
+  color: var(--text-main);
+}
+
+.chart-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.chart-empty {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 32px 0;
+}
+
+/* ── Budget Bars ── */
+.budget-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.budget-bar-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.budget-bar-label {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.budget-bar-code {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.budget-bar-year {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.budget-bar-track {
+  width: 120px;
+  height: 8px;
+  border-radius: 99px;
+  background: var(--border-color);
+  overflow: hidden;
+}
+
+.budget-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.budget-bar-pct {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  min-width: 36px;
+  text-align: right;
+}
+
+/* ── Donut Chart ── */
+.donut-container {
+  display: flex;
+  justify-content: center;
+}
+
+.donut-svg {
+  width: 160px;
+  height: 160px;
+}
+
+.donut-center-num {
+  font-size: 20px;
+  font-weight: 800;
+  fill: var(--text-main);
+  font-family: var(--font-sans);
+}
+
+.donut-center-label {
+  font-size: 9px;
+  fill: var(--text-muted);
+  font-family: var(--font-sans);
+}
+
+/* Billing Legend */
+.billing-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.billing-legend-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.legend-count {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-main);
+  text-align: right;
+}
+
+.legend-amount {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: right;
+  min-width: 90px;
 }
