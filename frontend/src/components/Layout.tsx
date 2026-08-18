@@ -14,7 +14,7 @@ export const Layout: React.FC = () => {
             <img src="/tesda-logo.png" alt="TESDA Logo" className="sidebar-logo-img" />
           </div>
           <div>
-            <div className="sidebar-title">Davao City</div>
+            <div className="sidebar-title">TESDA DCDO</div>
             <div className="sidebar-subtitle">Scholarship Portal</div>
           </div>
         </div>
