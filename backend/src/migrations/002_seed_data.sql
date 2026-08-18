@@ -11,18 +11,10 @@ BEGIN;
 -- Hash: $2b$10$vArmeJ0qHoKqQnV7NV8phOwxzPleAKCVCHq4dTUk.I8Cyuxz43Vyu
 INSERT INTO internal_users (user_id, username, email, password_hash, department, role)
 VALUES
-  ('a0000000-0000-0000-0000-000000000001', 'admin.reyes',      'admin.reyes@davao.gov.ph',
+  ('a0000000-0000-0000-0000-000000000001', 'CATHERYN PEREZ', 'csperez@tesda.gov.ph',
    '$2b$10$ULh/v7H0sMnrbf8giEYpM.kmLcYHjzD0HUEMUnYxZFASGVtbJC5fa',
-   'City Social Welfare and Development Office', 'admin'),
-
-  ('a0000000-0000-0000-0000-000000000002', 'eval.santos',      'eval.santos@davao.gov.ph',
-   '$2b$10$ULh/v7H0sMnrbf8giEYpM.kmLcYHjzD0HUEMUnYxZFASGVtbJC5fa',
-   'Scholarship Monitoring Division', 'evaluator'),
-
-  ('a0000000-0000-0000-0000-000000000003', 'finance.dela.cruz', 'finance.delacruz@davao.gov.ph',
-   '$2b$10$ULh/v7H0sMnrbf8giEYpM.kmLcYHjzD0HUEMUnYxZFASGVtbJC5fa',
-   'City Accounting Office', 'finance_auditor')
-ON CONFLICT (user_id) DO UPDATE SET password_hash = EXCLUDED.password_hash;
+   'TESDA DCDO Scholarship Focal', 'admin')
+ON CONFLICT (user_id) DO NOTHING;
 
 -- ── 2. Training Providers ───────────────────────────────────
 INSERT INTO training_providers (provider_id, institution_name, institution_type, classification, school_id, complete_address, contact_number, status)
@@ -128,27 +120,27 @@ VALUES
   ('f0000000-0000-0000-0000-000000000001',
    'b0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001',
    'INV-2026-DVO-00145', 292500.00, 'verified',
-   'a0000000-0000-0000-0000-000000000003'),
+   'a0000000-0000-0000-0000-000000000001'),
 
   ('f0000000-0000-0000-0000-000000000002',
    'b0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001',
    'INV-2026-DVO-00198', 292500.00, 'pending',
-   'a0000000-0000-0000-0000-000000000003'),
+   'a0000000-0000-0000-0000-000000000001'),
 
   ('f0000000-0000-0000-0000-000000000003',
    'b0000000-0000-0000-0000-000000000002', 'd0000000-0000-0000-0000-000000000002',
    'INV-2026-MPC-00067', 196250.00, 'verified',
-   'a0000000-0000-0000-0000-000000000003'),
+   'a0000000-0000-0000-0000-000000000001'),
 
   ('f0000000-0000-0000-0000-000000000004',
    'b0000000-0000-0000-0000-000000000002', 'd0000000-0000-0000-0000-000000000002',
    'INV-2026-MPC-00089', 196250.00, 'rejected',
-   'a0000000-0000-0000-0000-000000000003'),
+   'a0000000-0000-0000-0000-000000000001'),
 
   ('f0000000-0000-0000-0000-000000000005',
    'b0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000004',
    'INV-2026-DVO-00210', 97500.00, 'pending',
-   'a0000000-0000-0000-0000-000000000003')
+   'a0000000-0000-0000-0000-000000000001')
 ON CONFLICT (billing_id) DO NOTHING;
 
 COMMIT;
