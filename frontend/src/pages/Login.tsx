@@ -39,7 +39,7 @@ export const Login: React.FC = () => {
           <div className="city-logo">
             <img src="/tesda-logo.png" alt="TESDA Logo" className="logo-img" />
           </div>
-          <h2 className="portal-name">Davao City</h2>
+          <h2 className="portal-name">TESDA DCDO</h2>
           <div className="portal-sub">Scholarship Programs Portal</div>
         </div>
 

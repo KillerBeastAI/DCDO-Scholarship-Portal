@@ -63,7 +63,7 @@ export const Layout: React.FC = () => {
 
       <div className="main-wrapper">
         <header className="topbar">
-          <h1 className="page-title">Davao City Scholarship Programs Management System</h1>
+          <h1 className="page-title">TESDA DCDO Scholarship Programs Management System</h1>
           {user && (
             <div className="user-profile">
               <div className="user-info">
