@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { LoadingScreen } from '../components/LoadingScreen';
 import './Login.css';
 
 export const Login: React.FC = () => {
@@ -29,6 +30,12 @@ export const Login: React.FC = () => {
 
   return (
     <div className="login-page">
+      {submitting && (
+        <LoadingScreen
+          message="Authenticating..."
+          submessage="Signing in to TESDA DCDO Portal"
+        />
+      )}
       <div className="login-card">
         <div className="login-header">
           <div className="city-logo">
