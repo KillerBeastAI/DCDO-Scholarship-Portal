@@ -36,7 +36,9 @@ export const Login: React.FC = () => {
     <div className="login-page">
       <div className="login-card">
         <div className="login-header">
-          <div className="city-logo">DC</div>
+          <div className="city-logo">
+            <img src="/tesda-logo.png" alt="TESDA Logo" className="logo-img" />
+          </div>
           <h2 className="portal-name">Davao City</h2>
           <div className="portal-sub">Scholarship Programs Portal</div>
         </div>
