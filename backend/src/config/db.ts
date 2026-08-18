@@ -3,12 +3,14 @@ import { env, isProduction } from './env.js';
 
 const { Pool } = pg;
 
+const useSsl = isProduction || env.DATABASE_URL.includes('supabase.co') || env.DATABASE_URL.includes('pooler.supabase.com');
+
 export const pool = new Pool({
   connectionString: env.DATABASE_URL,
-  max: 20,
+  max: 10,
   idleTimeoutMillis: 30_000,
-  connectionTimeoutMillis: 5_000,
-  ssl: isProduction ? { rejectUnauthorized: false } : undefined,
+  connectionTimeoutMillis: 10_000,
+  ssl: useSsl ? { rejectUnauthorized: false } : undefined,
 });
 
 // Log pool errors to prevent unhandled crashes
