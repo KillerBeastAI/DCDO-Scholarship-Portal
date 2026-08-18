@@ -1,6 +1,7 @@
 {
   "name": "fullstack-monorepo",
   "private": true,
+  "type": "module",
   "workspaces": ["backend", "frontend"],
   "scripts": {
     "dev:backend": "npm --workspace backend run dev",
