@@ -17,8 +17,8 @@ export const Providers: React.FC = () => {
   const emptyForm = {
     institution_name: '',
     email_website_fb: '',
-    institution_type: 'TVI',
-    classification: 'Private',
+    institution_type: 'Private',
+    classification: 'TVI',
     type_of_program: 'WTR',
     sector: '',
     qualification_title: '',
@@ -300,11 +300,9 @@ export const Providers: React.FC = () => {
                       value={form.institution_type}
                       onChange={(e) => setForm({ ...form, institution_type: e.target.value })}
                     >
-                      <option value="TVI">TVI (Technical Vocational Institution)</option>
-                      <option value="HEI">HEI (Higher Education Institution)</option>
-                      <option value="SUC">SUC (State University and College)</option>
-                      <option value="LUC">LUC (Local University and College)</option>
-                      <option value="Company">Company / Enterprise-Based</option>
+                      <option value="Public">Public</option>
+                      <option value="Private">Private</option>
+                      <option value="LGU-RUN">LGU-RUN</option>
                     </select>
                   </div>
                   <div className="form-group">
@@ -314,9 +312,13 @@ export const Providers: React.FC = () => {
                       value={form.classification}
                       onChange={(e) => setForm({ ...form, classification: e.target.value })}
                     >
-                      <option value="Private">Private</option>
-                      <option value="Public">Public</option>
-                      <option value="LGU">LGU</option>
+                      <option value="TTI">TTI</option>
+                      <option value="TVI">TVI</option>
+                      <option value="SUC">SUC</option>
+                      <option value="LUC">LUC</option>
+                      <option value="HEI">HEI</option>
+                      <option value="EBT">EBT</option>
+                      <option value="EBET">EBET</option>
                     </select>
                   </div>
                 </div>
