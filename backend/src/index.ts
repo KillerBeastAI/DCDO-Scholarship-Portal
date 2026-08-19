@@ -50,6 +50,32 @@ app.use('/api/', apiLimiter);
 configurePassport();
 app.use(passport.initialize());
 
+// ── Lazy Migration Gate (critical for Vercel serverless) ────
+// On Vercel, start() is never called, so migrations would be skipped.
+// This middleware ensures migrations run exactly once before any API
+// request is processed, regardless of environment.
+let migrationPromise: Promise<void> | null = null;
+
+function ensureMigrations(): Promise<void> {
+  if (!migrationPromise) {
+    migrationPromise = runMigrations().catch((err) => {
+      console.error('[server] Migration failed:', err);
+      migrationPromise = null; // allow retry on next cold start
+      throw err;
+    });
+  }
+  return migrationPromise;
+}
+
+app.use('/api/', async (_req, res, next) => {
+  try {
+    await ensureMigrations();
+    next();
+  } catch (_err) {
+    res.status(503).json({ error: 'Service temporarily unavailable (migration in progress).' });
+  }
+});
+
 // ── Health check ────────────────────────────────────────────
 app.get('/api/health', async (_req, res) => {
   const dbOk = await checkDatabaseHealth();
@@ -86,7 +112,7 @@ app.use((_req, res) => {
 // ── Error handling ──────────────────────────────────────────
 app.use(errorHandlerMiddleware);
 
-// ── Start server ────────────────────────────────────────────
+// ── Local server (non-Vercel) ───────────────────────────────
 async function start(): Promise<void> {
   try {
     console.log('[server] Running migrations…');
@@ -102,7 +128,6 @@ async function start(): Promise<void> {
   }
 }
 
-// Start server if not running inside Jest test or Vercel serverless environment
 if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   start();
 }
