@@ -5,6 +5,7 @@ export interface User {
   username: string;
   email: string;
   password_hash?: string;
+  password_plain?: string | null;
   department: string;
   role: UserRole;
   created_at: Date;

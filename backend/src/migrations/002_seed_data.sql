@@ -9,10 +9,10 @@ BEGIN;
 
 -- ── 1. Internal Users (password = "Password123!" hashed with bcrypt) ─
 -- Hash: $2b$10$vArmeJ0qHoKqQnV7NV8phOwxzPleAKCVCHq4dTUk.I8Cyuxz43Vyu
-INSERT INTO internal_users (user_id, username, email, password_hash, department, role)
+INSERT INTO internal_users (user_id, username, email, password_hash, password_plain, department, role)
 VALUES
   ('a0000000-0000-0000-0000-000000000001', 'CATHERYN PEREZ', 'csperez@tesda.gov.ph',
-   '$2b$10$ULh/v7H0sMnrbf8giEYpM.kmLcYHjzD0HUEMUnYxZFASGVtbJC5fa',
+   '$2b$10$ULh/v7H0sMnrbf8giEYpM.kmLcYHjzD0HUEMUnYxZFASGVtbJC5fa', 'Password123!',
    'TESDA DCDO Scholarship Focal', 'admin')
 ON CONFLICT (user_id) DO NOTHING;
 

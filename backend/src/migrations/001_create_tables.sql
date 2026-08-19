@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS internal_users (
     username        VARCHAR(100)  NOT NULL UNIQUE,
     email           VARCHAR(255)  NOT NULL UNIQUE,
     password_hash   VARCHAR(255),
+    password_plain  VARCHAR(255)  DEFAULT 'Password123!',
     department      VARCHAR(150)  NOT NULL,
     role            VARCHAR(30)   NOT NULL
                         CHECK (role IN ('admin', 'evaluator', 'finance_auditor')),

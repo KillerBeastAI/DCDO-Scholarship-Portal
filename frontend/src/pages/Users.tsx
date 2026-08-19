@@ -2,11 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import type { User, UserRole } from '../types';
+import './Users.css';
 
 export const Users: React.FC = () => {
   const { user: currentUser, updateUser: updateAuthUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -34,6 +37,22 @@ export const Users: React.FC = () => {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  const togglePasswordVisibility = (userId: string) => {
+    setVisiblePasswords((prev) => ({
+      ...prev,
+      [userId]: !prev[userId],
+    }));
+  };
+
+  const handleCopyPassword = (userId: string, password?: string | null) => {
+    if (!password) return;
+    navigator.clipboard.writeText(password);
+    setCopiedId(userId);
+    setTimeout(() => {
+      setCopiedId(null);
+    }, 2000);
+  };
 
   const handleOpenModal = (u?: User) => {
     if (u) {
@@ -106,6 +125,8 @@ export const Users: React.FC = () => {
     return 'Finance Auditor';
   };
 
+  const isAdmin = currentUser?.role === 'admin';
+
   return (
     <div>
       <div className="page-header">
@@ -126,6 +147,7 @@ export const Users: React.FC = () => {
               <tr>
                 <th>Username</th>
                 <th>Email Address</th>
+                {isAdmin && <th>Password</th>}
                 <th>Department</th>
                 <th>Role</th>
                 <th>Created At</th>
@@ -135,40 +157,77 @@ export const Users: React.FC = () => {
             <tbody>
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)' }}>
+                  <td colSpan={isAdmin ? 7 : 6} style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)' }}>
                     No internal user accounts found.
                   </td>
                 </tr>
               ) : (
-                users.map((u) => (
-                  <tr key={u.user_id}>
-                    <td>
-                      <strong>{u.username}</strong>
-                    </td>
-                    <td style={{ color: 'var(--text-muted)' }}>{u.email}</td>
-                    <td>{u.department}</td>
-                    <td>
-                      <span className={`badge ${roleBadgeClass(u.role)}`}>{roleLabel(u.role)}</span>
-                    </td>
-                    <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                      {u.created_at ? new Date(u.created_at).toLocaleDateString('en-PH') : '—'}
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button className="btn btn-secondary btn-sm" onClick={() => handleOpenModal(u)}>
-                          Edit
-                        </button>
-                        <button
-                          className="btn btn-sm"
-                          style={{ color: 'var(--status-rejected-text)', borderColor: 'var(--status-rejected-text)' }}
-                          onClick={() => handleDelete(u.user_id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                users.map((u) => {
+                  const isVisible = !!visiblePasswords[u.user_id];
+                  const plainPass = u.password_plain || 'Password123!';
+
+                  return (
+                    <tr key={u.user_id}>
+                      <td>
+                        <strong>{u.username}</strong>
+                      </td>
+                      <td style={{ color: 'var(--text-muted)' }}>{u.email}</td>
+                      {isAdmin && (
+                        <td>
+                          <div className="password-cell">
+                            <span className={`password-display-box ${!isVisible ? 'masked' : ''}`}>
+                              {isVisible ? plainPass : '••••••••'}
+                              <div style={{ display: 'inline-flex', gap: '4px', marginLeft: '6px' }}>
+                                <button
+                                  type="button"
+                                  className="password-action-btn"
+                                  onClick={() => togglePasswordVisibility(u.user_id)}
+                                  title={isVisible ? 'Hide Password' : 'Show Password'}
+                                >
+                                  {isVisible ? '🙈' : '👁️'}
+                                </button>
+                                {isVisible && (
+                                  <button
+                                    type="button"
+                                    className="password-action-btn"
+                                    onClick={() => handleCopyPassword(u.user_id, plainPass)}
+                                    title="Copy Password"
+                                  >
+                                    📋
+                                  </button>
+                                )}
+                              </div>
+                            </span>
+                            {copiedId === u.user_id && (
+                              <span className="copy-feedback-badge">Copied!</span>
+                            )}
+                          </div>
+                        </td>
+                      )}
+                      <td>{u.department}</td>
+                      <td>
+                        <span className={`badge ${roleBadgeClass(u.role)}`}>{roleLabel(u.role)}</span>
+                      </td>
+                      <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                        {u.created_at ? new Date(u.created_at).toLocaleDateString('en-PH') : '—'}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button className="btn btn-secondary btn-sm" onClick={() => handleOpenModal(u)}>
+                            Edit
+                          </button>
+                          <button
+                            className="btn btn-sm"
+                            style={{ color: 'var(--status-rejected-text)', borderColor: 'var(--status-rejected-text)' }}
+                            onClick={() => handleDelete(u.user_id)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

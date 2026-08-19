@@ -31,11 +31,13 @@ export class UserService {
       throw err;
     }
 
-    const password_hash = data.password ? await hashPassword(data.password) : undefined;
+    const password_plain = data.password || 'Password123!';
+    const password_hash = await hashPassword(password_plain);
     return UserModel.create({
       username: data.username,
       email: data.email,
       password_hash,
+      password_plain,
       department: data.department,
       role: data.role,
     });
@@ -63,12 +65,14 @@ export class UserService {
     }
 
     const password_hash = data.password ? await hashPassword(data.password) : undefined;
+    const password_plain = data.password ? data.password : undefined;
     const updated = await UserModel.update(id, {
       username: data.username,
       email: data.email,
       department: data.department,
       role: data.role,
       password_hash,
+      password_plain,
     });
 
     if (!updated) {
