@@ -59,8 +59,8 @@ CREATE INDEX IF NOT EXISTS idx_programs_fy ON scholarship_programs (fiscal_year)
 -- ── 4. qualification_maps ───────────────────────────────────
 CREATE TABLE IF NOT EXISTS qualification_maps (
     qm_id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    program_id               UUID          NOT NULL REFERENCES scholarship_programs(program_id),
-    provider_id              UUID          NOT NULL REFERENCES training_providers(provider_id),
+    program_id               UUID          NOT NULL REFERENCES scholarship_programs(program_id) ON DELETE CASCADE,
+    provider_id              UUID          NOT NULL REFERENCES training_providers(provider_id) ON DELETE CASCADE,
     rqm_code                 VARCHAR(50),
     nqm_code                 VARCHAR(50),
     pqm_code                 VARCHAR(50),
@@ -86,7 +86,7 @@ CREATE INDEX IF NOT EXISTS idx_qm_status   ON qualification_maps (status);
 CREATE TABLE IF NOT EXISTS physical_accomplishments (
     accomplishment_id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     qm_id                               UUID          NOT NULL UNIQUE
-                                             REFERENCES qualification_maps(qm_id),
+                                             REFERENCES qualification_maps(qm_id) ON DELETE CASCADE,
     enrolled_male                        INT NOT NULL DEFAULT 0,
     enrolled_female                      INT NOT NULL DEFAULT 0,
     dropped_male                         INT NOT NULL DEFAULT 0,
@@ -110,8 +110,8 @@ CREATE TABLE IF NOT EXISTS physical_accomplishments (
 -- ── 6. internal_billings ────────────────────────────────────
 CREATE TABLE IF NOT EXISTS internal_billings (
     billing_id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    provider_id           UUID          NOT NULL REFERENCES training_providers(provider_id),
-    qm_id                 UUID          NOT NULL REFERENCES qualification_maps(qm_id),
+    provider_id           UUID          NOT NULL REFERENCES training_providers(provider_id) ON DELETE CASCADE,
+    qm_id                 UUID          NOT NULL REFERENCES qualification_maps(qm_id) ON DELETE CASCADE,
     external_reference_no VARCHAR(100)  NOT NULL,
     claimed_amount        NUMERIC(15,2) NOT NULL CHECK (claimed_amount >= 0),
     verification_status   VARCHAR(30)   NOT NULL DEFAULT 'pending'

@@ -57,6 +57,15 @@ export class ProviderService {
 
   static async deleteProvider(id: string): Promise<void> {
     await this.getProviderById(id);
-    await ProviderModel.delete(id);
+    try {
+      await ProviderModel.delete(id);
+    } catch (err: any) {
+      if (err.code === '23503') {
+        const error = new Error('Cannot delete this training provider because other records still depend on it.') as Error & { statusCode?: number };
+        error.statusCode = 400;
+        throw error;
+      }
+      throw err;
+    }
   }
 }
