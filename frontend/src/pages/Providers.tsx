@@ -14,7 +14,7 @@ export const Providers: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const [form, setForm] = useState({
+  const emptyForm = {
     institution_name: '',
     email_website_fb: '',
     institution_type: 'TVI',
@@ -25,12 +25,13 @@ export const Providers: React.FC = () => {
     training_duration_hours: '' as string | number,
     sil_duration_hours: '' as string | number,
     program_registration_number: '',
-    date_validity: '',
+    date_of_expiration: '',
     school_id: '',
     complete_address: '',
     contact_number: '',
-    status: 'active' as ProviderStatus,
-  });
+  };
+
+  const [form, setForm] = useState(emptyForm);
 
   const fetchProviders = async () => {
     setLoading(true);
@@ -66,31 +67,14 @@ export const Providers: React.FC = () => {
         training_duration_hours: provider.training_duration_hours ?? '',
         sil_duration_hours: provider.sil_duration_hours ?? '',
         program_registration_number: provider.program_registration_number || '',
-        date_validity: provider.date_validity || '',
+        date_of_expiration: provider.date_of_expiration || '',
         school_id: provider.school_id || '',
         complete_address: provider.complete_address || '',
         contact_number: provider.contact_number || '',
-        status: provider.status,
       });
     } else {
       setEditingId(null);
-      setForm({
-        institution_name: '',
-        email_website_fb: '',
-        institution_type: 'TVI',
-        classification: 'Private',
-        type_of_program: 'WTR',
-        sector: '',
-        qualification_title: '',
-        training_duration_hours: '',
-        sil_duration_hours: '',
-        program_registration_number: '',
-        date_validity: '',
-        school_id: '',
-        complete_address: '',
-        contact_number: '',
-        status: 'active',
-      });
+      setForm(emptyForm);
     }
     setShowModal(true);
   };
@@ -128,6 +112,12 @@ export const Providers: React.FC = () => {
 
   const canEdit = user?.role === 'admin' || user?.role === 'evaluator';
   const canDelete = user?.role === 'admin';
+
+  const getStatusBadgeClass = (status: ProviderStatus) => {
+    if (status === 'active') return 'badge badge-active';
+    if (status === 'suspended') return 'badge badge-suspended';
+    return 'badge badge-inactive';
+  };
 
   return (
     <div className="providers-page">
@@ -182,14 +172,15 @@ export const Providers: React.FC = () => {
                 <th style={{ textAlign: 'right' }}>Training Hrs</th>
                 <th style={{ textAlign: 'right' }}>SIL Hrs</th>
                 <th>PRN</th>
-                <th>Date Validity</th>
+                <th>Date of Expiration</th>
+                <th>Status</th>
                 {(canEdit || canDelete) && <th>Actions</th>}
               </tr>
             </thead>
             <tbody>
               {providers.length === 0 ? (
                 <tr>
-                  <td colSpan={12} style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
+                  <td colSpan={13} style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
                     No training providers found matching criteria.
                   </td>
                 </tr>
@@ -232,7 +223,12 @@ export const Providers: React.FC = () => {
                       <span className="prn-code">{p.program_registration_number || '—'}</span>
                     </td>
                     <td>
-                      <span className="validity-tag">{p.date_validity || '—'}</span>
+                      <span className="validity-tag">{p.date_of_expiration || '—'}</span>
+                    </td>
+                    <td>
+                      <span className={getStatusBadgeClass(p.status)}>
+                        {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
+                      </span>
                     </td>
                     {(canEdit || canDelete) && (
                       <td>
@@ -336,16 +332,13 @@ export const Providers: React.FC = () => {
                     />
                   </div>
                   <div className="form-group">
-                    <label>Status *</label>
-                    <select
+                    <label>Contact Number</label>
+                    <input
                       className="form-input"
-                      value={form.status}
-                      onChange={(e) => setForm({ ...form, status: e.target.value as ProviderStatus })}
-                    >
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                      <option value="suspended">Suspended</option>
-                    </select>
+                      value={form.contact_number}
+                      onChange={(e) => setForm({ ...form, contact_number: e.target.value })}
+                      placeholder="e.g. (082) 555-0101"
+                    />
                   </div>
                 </div>
 
@@ -433,13 +426,16 @@ export const Providers: React.FC = () => {
                     />
                   </div>
                   <div className="form-group">
-                    <label>Date Validity</label>
+                    <label>Date of Expiration</label>
                     <input
+                      type="date"
                       className="form-input"
-                      value={form.date_validity}
-                      onChange={(e) => setForm({ ...form, date_validity: e.target.value })}
-                      placeholder="e.g. 2028-12-31 or Valid until Dec 2028"
+                      value={form.date_of_expiration}
+                      onChange={(e) => setForm({ ...form, date_of_expiration: e.target.value })}
                     />
+                    <small style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '4px', display: 'block' }}>
+                      Status is automatically set based on this date
+                    </small>
                   </div>
                 </div>
               </div>

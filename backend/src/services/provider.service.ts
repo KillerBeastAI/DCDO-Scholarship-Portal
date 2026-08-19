@@ -27,11 +27,11 @@ export class ProviderService {
     training_duration_hours?: number | null;
     sil_duration_hours?: number | null;
     program_registration_number?: string | null;
-    date_validity?: string | null;
+    date_of_expiration?: string | null;
     school_id?: string | null;
     complete_address?: string;
     contact_number?: string | null;
-    status?: ProviderStatus;
+    // NOTE: status is intentionally excluded — auto-derived from date_of_expiration
   }): Promise<TrainingProvider> {
     if (!data.institution_name || !data.institution_type || !data.classification) {
       const err = new Error('Missing required training provider fields') as Error & { statusCode?: number };

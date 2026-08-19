@@ -129,6 +129,12 @@ body {
   color: var(--status-verified-text);
 }
 
+.badge-inactive {
+  background-color: rgba(100, 116, 139, 0.15);
+  color: #94a3b8;
+}
+
+
 /* Buttons */
 .btn {
   display: inline-flex;

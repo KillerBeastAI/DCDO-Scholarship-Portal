@@ -20,7 +20,7 @@ ON CONFLICT (user_id) DO NOTHING;
 INSERT INTO training_providers (
   provider_id, institution_name, email_website_fb, institution_type, classification,
   type_of_program, sector, qualification_title, training_duration_hours, sil_duration_hours,
-  program_registration_number, date_validity, school_id, complete_address, contact_number, status
+  program_registration_number, date_of_expiration, school_id, complete_address, contact_number, status
 )
 VALUES
   ('b0000000-0000-0000-0000-000000000001',

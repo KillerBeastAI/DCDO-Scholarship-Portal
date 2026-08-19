@@ -24,7 +24,7 @@ export interface TrainingProvider {
   training_duration_hours?: number | null;
   sil_duration_hours?: number | null;
   program_registration_number?: string | null;
-  date_validity?: string | null;
+  date_of_expiration?: string | null;
   school_id?: string | null;
   complete_address?: string;
   contact_number?: string | null;

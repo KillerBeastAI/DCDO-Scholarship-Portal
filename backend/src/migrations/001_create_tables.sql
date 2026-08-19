@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS training_providers (
     training_duration_hours     NUMERIC(10,2) DEFAULT 0,
     sil_duration_hours          NUMERIC(10,2) DEFAULT 0,
     program_registration_number VARCHAR(100),
-    date_validity               VARCHAR(50),
+    date_of_expiration VARCHAR(50),
     school_id                   VARCHAR(50)  UNIQUE,
     complete_address            TEXT         NOT NULL DEFAULT '',
     contact_number              VARCHAR(30),
