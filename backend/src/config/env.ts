@@ -21,24 +21,25 @@ interface EnvConfig {
   FRONTEND_URL: string;
 }
 
-function requireEnv(key: string): string {
-  const value = process.env[key];
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${key}`);
-  }
-  return value;
-}
-
 function optionalEnv(key: string, fallback: string): string {
   return process.env[key] ?? fallback;
 }
 
 export const env: EnvConfig = {
   PORT: parseInt(optionalEnv('PORT', '5000'), 10),
-  NODE_ENV: optionalEnv('NODE_ENV', 'development'),
-  DATABASE_URL: requireEnv('DATABASE_URL'),
-  JWT_SECRET: requireEnv('JWT_SECRET'),
-  JWT_REFRESH_SECRET: requireEnv('JWT_REFRESH_SECRET'),
+  NODE_ENV: optionalEnv('NODE_ENV', 'production'),
+  DATABASE_URL: optionalEnv(
+    'DATABASE_URL',
+    'postgresql://postgres.czpfkhhfvswddwqmdlgf:Tesda_dcdo2026@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres'
+  ),
+  JWT_SECRET: optionalEnv(
+    'JWT_SECRET',
+    'tesda_dcdo_super_secret_jwt_key_2026_scholarship'
+  ),
+  JWT_REFRESH_SECRET: optionalEnv(
+    'JWT_REFRESH_SECRET',
+    'tesda_dcdo_super_secret_jwt_refresh_key_2026_scholarship'
+  ),
   JWT_EXPIRES_IN: optionalEnv('JWT_EXPIRES_IN', '15m'),
   JWT_REFRESH_EXPIRES_IN: optionalEnv('JWT_REFRESH_EXPIRES_IN', '7d'),
   GOOGLE_CLIENT_ID: optionalEnv('GOOGLE_CLIENT_ID', ''),
