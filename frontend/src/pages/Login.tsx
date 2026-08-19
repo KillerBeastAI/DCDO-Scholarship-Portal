@@ -22,7 +22,14 @@ export const Login: React.FC = () => {
       await login(email, password);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Login failed. Please verify credentials.');
+      const errData = err.response?.data?.error || err.response?.data?.message || err.response?.data;
+      if (typeof errData === 'string') {
+        setError(errData);
+      } else if (errData && typeof errData === 'object') {
+        setError(errData.message || JSON.stringify(errData));
+      } else {
+        setError(err.message || 'Login failed. Please verify credentials.');
+      }
     } finally {
       setSubmitting(false);
     }
