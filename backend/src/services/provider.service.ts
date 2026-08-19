@@ -18,14 +18,22 @@ export class ProviderService {
 
   static async createProvider(data: {
     institution_name: string;
+    email_website_fb?: string | null;
     institution_type: string;
     classification: string;
+    type_of_program?: string | null;
+    sector?: string | null;
+    qualification_title?: string | null;
+    training_duration_hours?: number | null;
+    sil_duration_hours?: number | null;
+    program_registration_number?: string | null;
+    date_validity?: string | null;
     school_id?: string | null;
-    complete_address: string;
+    complete_address?: string;
     contact_number?: string | null;
     status?: ProviderStatus;
   }): Promise<TrainingProvider> {
-    if (!data.institution_name || !data.institution_type || !data.classification || !data.complete_address) {
+    if (!data.institution_name || !data.institution_type || !data.classification) {
       const err = new Error('Missing required training provider fields') as Error & { statusCode?: number };
       err.statusCode = 400;
       throw err;

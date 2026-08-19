@@ -15,10 +15,18 @@ export type ProviderStatus = 'active' | 'inactive' | 'suspended';
 export interface TrainingProvider {
   provider_id: string;
   institution_name: string;
+  email_website_fb?: string | null;
   institution_type: string;
   classification: string;
+  type_of_program?: string | null;
+  sector?: string | null;
+  qualification_title?: string | null;
+  training_duration_hours?: number | null;
+  sil_duration_hours?: number | null;
+  program_registration_number?: string | null;
+  date_validity?: string | null;
   school_id?: string | null;
-  complete_address: string;
+  complete_address?: string;
   contact_number?: string | null;
   status: ProviderStatus;
 }

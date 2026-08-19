@@ -16,8 +16,16 @@ export const Providers: React.FC = () => {
 
   const [form, setForm] = useState({
     institution_name: '',
+    email_website_fb: '',
     institution_type: 'TVI',
     classification: 'Private',
+    type_of_program: 'WTR',
+    sector: '',
+    qualification_title: '',
+    training_duration_hours: '' as string | number,
+    sil_duration_hours: '' as string | number,
+    program_registration_number: '',
+    date_validity: '',
     school_id: '',
     complete_address: '',
     contact_number: '',
@@ -49,10 +57,18 @@ export const Providers: React.FC = () => {
       setEditingId(provider.provider_id);
       setForm({
         institution_name: provider.institution_name,
+        email_website_fb: provider.email_website_fb || '',
         institution_type: provider.institution_type,
         classification: provider.classification,
+        type_of_program: provider.type_of_program || 'WTR',
+        sector: provider.sector || '',
+        qualification_title: provider.qualification_title || '',
+        training_duration_hours: provider.training_duration_hours ?? '',
+        sil_duration_hours: provider.sil_duration_hours ?? '',
+        program_registration_number: provider.program_registration_number || '',
+        date_validity: provider.date_validity || '',
         school_id: provider.school_id || '',
-        complete_address: provider.complete_address,
+        complete_address: provider.complete_address || '',
         contact_number: provider.contact_number || '',
         status: provider.status,
       });
@@ -60,8 +76,16 @@ export const Providers: React.FC = () => {
       setEditingId(null);
       setForm({
         institution_name: '',
+        email_website_fb: '',
         institution_type: 'TVI',
         classification: 'Private',
+        type_of_program: 'WTR',
+        sector: '',
+        qualification_title: '',
+        training_duration_hours: '',
+        sil_duration_hours: '',
+        program_registration_number: '',
+        date_validity: '',
         school_id: '',
         complete_address: '',
         contact_number: '',
@@ -74,10 +98,16 @@ export const Providers: React.FC = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const payload: any = {
+        ...form,
+        training_duration_hours: form.training_duration_hours ? Number(form.training_duration_hours) : 0,
+        sil_duration_hours: form.sil_duration_hours ? Number(form.sil_duration_hours) : 0,
+      };
+
       if (editingId) {
-        await api.put(`/training-providers/${editingId}`, form);
+        await api.put(`/training-providers/${editingId}`, payload);
       } else {
-        await api.post('/training-providers', form);
+        await api.post('/training-providers', payload);
       }
       setShowModal(false);
       fetchProviders();
@@ -100,9 +130,12 @@ export const Providers: React.FC = () => {
   const canDelete = user?.role === 'admin';
 
   return (
-    <div>
+    <div className="providers-page">
       <div className="page-header">
-        <h2 className="page-title-text">Training Providers Directory</h2>
+        <div>
+          <h2 className="page-title-text">Training Providers Directory</h2>
+          <div className="page-subtitle-text">Registered Technical Vocational Institutions and Higher Education Programs</div>
+        </div>
         {canEdit && (
           <button className="btn btn-primary" onClick={() => handleOpenModal()}>
             + Add Provider
@@ -114,7 +147,7 @@ export const Providers: React.FC = () => {
         <input
           type="text"
           className="search-input"
-          placeholder="Search by institution name or school ID..."
+          placeholder="Search by institution, sector, qualification, or PRN..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -130,26 +163,33 @@ export const Providers: React.FC = () => {
         </select>
       </div>
 
-      <div className="glass-card" style={{ overflow: 'hidden' }}>
+      <div className="glass-card table-responsive-container">
         {loading ? (
-          <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading providers...</div>
+          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+            Loading training providers...
+          </div>
         ) : (
-          <table className="data-table">
+          <table className="data-table providers-table">
             <thead>
               <tr>
                 <th>Institution Name</th>
+                <th>E-mail / Web / FB</th>
                 <th>Type</th>
                 <th>Classification</th>
-                <th>School ID</th>
-                <th>Address</th>
-                <th>Status</th>
+                <th>Type of Program</th>
+                <th>Sector</th>
+                <th>Program / Qualification Title</th>
+                <th style={{ textAlign: 'right' }}>Training Hrs</th>
+                <th style={{ textAlign: 'right' }}>SIL Hrs</th>
+                <th>PRN</th>
+                <th>Date Validity</th>
                 {(canEdit || canDelete) && <th>Actions</th>}
               </tr>
             </thead>
             <tbody>
               {providers.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)' }}>
+                  <td colSpan={12} style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
                     No training providers found matching criteria.
                   </td>
                 </tr>
@@ -157,18 +197,46 @@ export const Providers: React.FC = () => {
                 providers.map((p) => (
                   <tr key={p.provider_id}>
                     <td>
-                      <strong>{p.institution_name}</strong>
+                      <div className="provider-name-cell">
+                        <strong>{p.institution_name}</strong>
+                        {p.school_id && <span className="provider-subcode">{p.school_id}</span>}
+                      </div>
                     </td>
-                    <td>{p.institution_type}</td>
-                    <td>{p.classification}</td>
-                    <td>{p.school_id || '—'}</td>
-                    <td>{p.complete_address}</td>
                     <td>
-                      <span className={`badge badge-${p.status}`}>{p.status}</span>
+                      <span className="contact-link-text" title={p.email_website_fb || '—'}>
+                        {p.email_website_fb || '—'}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="badge badge-info">{p.institution_type}</span>
+                    </td>
+                    <td>
+                      <span className="badge badge-secondary">{p.classification}</span>
+                    </td>
+                    <td>
+                      <span className="badge badge-program">{p.type_of_program || 'WTR'}</span>
+                    </td>
+                    <td>
+                      <span className="sector-tag">{p.sector || '—'}</span>
+                    </td>
+                    <td>
+                      <div className="qualification-title-text">{p.qualification_title || '—'}</div>
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <span className="hours-val">{p.training_duration_hours ? `${p.training_duration_hours} hrs` : '—'}</span>
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <span className="hours-val">{p.sil_duration_hours ? `${p.sil_duration_hours} hrs` : '—'}</span>
+                    </td>
+                    <td>
+                      <span className="prn-code">{p.program_registration_number || '—'}</span>
+                    </td>
+                    <td>
+                      <span className="validity-tag">{p.date_validity || '—'}</span>
                     </td>
                     {(canEdit || canDelete) && (
                       <td>
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                        <div style={{ display: 'flex', gap: '6px' }}>
                           {canEdit && (
                             <button className="btn btn-secondary btn-sm" onClick={() => handleOpenModal(p)}>
                               Edit
@@ -177,7 +245,7 @@ export const Providers: React.FC = () => {
                           {canDelete && (
                             <button
                               className="btn btn-sm"
-                              style={{ color: 'var(--status-rejected-text)', borderColor: 'var(--status-rejected-text)' }}
+                              style={{ color: 'var(--status-rejected-text)', borderColor: 'rgba(239, 68, 68, 0.4)' }}
                               onClick={() => handleDelete(p.provider_id)}
                             >
                               Delete
@@ -196,87 +264,192 @@ export const Providers: React.FC = () => {
 
       {showModal && (
         <div className="modal-backdrop">
-          <div className="modal-card">
+          <div className="modal-card modal-card-lg">
             <div className="modal-header">
-              <h3 className="modal-title">{editingId ? 'Edit Training Provider' : 'Add Training Provider'}</h3>
+              <div>
+                <h3 className="modal-title">{editingId ? 'Edit Training Provider' : 'Add Training Provider'}</h3>
+                <div className="modal-subtitle">Configure institution details, sector, and qualification registration</div>
+              </div>
               <button className="close-btn" onClick={() => setShowModal(false)}>✕</button>
             </div>
             <form onSubmit={handleSave} className="modal-form">
-              <div className="form-group">
-                <label>Institution Name</label>
-                <input
-                  className="form-input"
-                  value={form.institution_name}
-                  onChange={(e) => setForm({ ...form, institution_name: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div className="modal-form-scrollable">
+                <div className="form-section-title">1. Institution Information</div>
                 <div className="form-group">
-                  <label>Type</label>
-                  <select
+                  <label>Institution Name *</label>
+                  <input
                     className="form-input"
-                    value={form.institution_type}
-                    onChange={(e) => setForm({ ...form, institution_type: e.target.value })}
-                  >
-                    <option value="TVI">TVI</option>
-                    <option value="HEI">HEI</option>
-                    <option value="Company">Company</option>
-                  </select>
+                    value={form.institution_name}
+                    onChange={(e) => setForm({ ...form, institution_name: e.target.value })}
+                    placeholder="e.g. Davao Technical Skills Institute"
+                    required
+                  />
                 </div>
+
                 <div className="form-group">
-                  <label>Classification</label>
-                  <select
+                  <label>E-mail Address / Website / FB Account</label>
+                  <input
                     className="form-input"
-                    value={form.classification}
-                    onChange={(e) => setForm({ ...form, classification: e.target.value })}
-                  >
-                    <option value="Private">Private</option>
-                    <option value="Public">Public</option>
-                    <option value="LGU">LGU</option>
-                  </select>
+                    value={form.email_website_fb}
+                    onChange={(e) => setForm({ ...form, email_website_fb: e.target.value })}
+                    placeholder="e.g. dtsi.edu.ph@gmail.com / fb.com/dtsi"
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div className="form-group">
+                    <label>Type of Institution *</label>
+                    <select
+                      className="form-input"
+                      value={form.institution_type}
+                      onChange={(e) => setForm({ ...form, institution_type: e.target.value })}
+                    >
+                      <option value="TVI">TVI (Technical Vocational Institution)</option>
+                      <option value="HEI">HEI (Higher Education Institution)</option>
+                      <option value="SUC">SUC (State University and College)</option>
+                      <option value="LUC">LUC (Local University and College)</option>
+                      <option value="Company">Company / Enterprise-Based</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Classification of Institution *</label>
+                    <select
+                      className="form-input"
+                      value={form.classification}
+                      onChange={(e) => setForm({ ...form, classification: e.target.value })}
+                    >
+                      <option value="Private">Private</option>
+                      <option value="Public">Public</option>
+                      <option value="LGU">LGU</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div className="form-group">
+                    <label>School ID</label>
+                    <input
+                      className="form-input"
+                      value={form.school_id}
+                      onChange={(e) => setForm({ ...form, school_id: e.target.value })}
+                      placeholder="e.g. DTSI-2024-001"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Status *</label>
+                    <select
+                      className="form-input"
+                      value={form.status}
+                      onChange={(e) => setForm({ ...form, status: e.target.value as ProviderStatus })}
+                    >
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                      <option value="suspended">Suspended</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Complete Address</label>
+                  <input
+                    className="form-input"
+                    value={form.complete_address}
+                    onChange={(e) => setForm({ ...form, complete_address: e.target.value })}
+                    placeholder="e.g. 123 Bonifacio St., Poblacion District, Davao City"
+                  />
+                </div>
+
+                <div className="form-section-title" style={{ marginTop: '16px' }}>2. Program & Qualification Registration Details</div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
+                  <div className="form-group">
+                    <label>Type of Program</label>
+                    <select
+                      className="form-input"
+                      value={form.type_of_program}
+                      onChange={(e) => setForm({ ...form, type_of_program: e.target.value })}
+                    >
+                      <option value="WTR">WTR (With Training Regulation)</option>
+                      <option value="NTR">NTR (No Training Regulation)</option>
+                      <option value="Bundled">Bundled Program</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Sector</label>
+                    <input
+                      className="form-input"
+                      value={form.sector}
+                      onChange={(e) => setForm({ ...form, sector: e.target.value })}
+                      placeholder="e.g. Information and Communications Technology (ICT)"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Program / Qualification Title</label>
+                  <input
+                    className="form-input"
+                    value={form.qualification_title}
+                    onChange={(e) => setForm({ ...form, qualification_title: e.target.value })}
+                    placeholder="e.g. Computer Systems Servicing NC II"
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div className="form-group">
+                    <label>Training Duration (in Hours)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      min="0"
+                      className="form-input"
+                      value={form.training_duration_hours}
+                      onChange={(e) => setForm({ ...form, training_duration_hours: e.target.value })}
+                      placeholder="e.g. 280"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>SIL Duration (in Hours)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      min="0"
+                      className="form-input"
+                      value={form.sil_duration_hours}
+                      onChange={(e) => setForm({ ...form, sil_duration_hours: e.target.value })}
+                      placeholder="e.g. 100"
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div className="form-group">
+                    <label>Program Registration Number (PRN)</label>
+                    <input
+                      className="form-input"
+                      value={form.program_registration_number}
+                      onChange={(e) => setForm({ ...form, program_registration_number: e.target.value })}
+                      placeholder="e.g. WTR-2024-00142"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Date Validity</label>
+                    <input
+                      className="form-input"
+                      value={form.date_validity}
+                      onChange={(e) => setForm({ ...form, date_validity: e.target.value })}
+                      placeholder="e.g. 2028-12-31 or Valid until Dec 2028"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="form-group">
-                <label>School ID (Optional)</label>
-                <input
-                  className="form-input"
-                  value={form.school_id}
-                  onChange={(e) => setForm({ ...form, school_id: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Complete Address</label>
-                <input
-                  className="form-input"
-                  value={form.complete_address}
-                  onChange={(e) => setForm({ ...form, complete_address: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Status</label>
-                <select
-                  className="form-input"
-                  value={form.status}
-                  onChange={(e) => setForm({ ...form, status: e.target.value as ProviderStatus })}
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="suspended">Suspended</option>
-                </select>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--border-color)' }}>
                 <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
                   Cancel
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  Save Provider
+                  Save Training Provider
                 </button>
               </div>
             </form>

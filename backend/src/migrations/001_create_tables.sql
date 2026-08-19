@@ -23,15 +23,23 @@ CREATE INDEX IF NOT EXISTS idx_users_role  ON internal_users (role);
 
 -- ── 2. training_providers ───────────────────────────────────
 CREATE TABLE IF NOT EXISTS training_providers (
-    provider_id       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    institution_name  VARCHAR(255) NOT NULL,
-    institution_type  VARCHAR(100) NOT NULL,
-    classification    VARCHAR(100) NOT NULL,
-    school_id         VARCHAR(50)  UNIQUE,
-    complete_address  TEXT         NOT NULL,
-    contact_number    VARCHAR(30),
-    status            VARCHAR(20)  NOT NULL DEFAULT 'active'
-                          CHECK (status IN ('active', 'inactive', 'suspended'))
+    provider_id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    institution_name            VARCHAR(255) NOT NULL,
+    email_website_fb            TEXT,
+    institution_type            VARCHAR(100) NOT NULL,
+    classification              VARCHAR(100) NOT NULL,
+    type_of_program             VARCHAR(100) DEFAULT 'WTR',
+    sector                      VARCHAR(150),
+    qualification_title         VARCHAR(255),
+    training_duration_hours     NUMERIC(10,2) DEFAULT 0,
+    sil_duration_hours          NUMERIC(10,2) DEFAULT 0,
+    program_registration_number VARCHAR(100),
+    date_validity               VARCHAR(50),
+    school_id                   VARCHAR(50)  UNIQUE,
+    complete_address            TEXT         NOT NULL DEFAULT '',
+    contact_number              VARCHAR(30),
+    status                      VARCHAR(20)  NOT NULL DEFAULT 'active'
+                                    CHECK (status IN ('active', 'inactive', 'suspended'))
 );
 
 CREATE INDEX IF NOT EXISTS idx_providers_status ON training_providers (status);

@@ -17,31 +17,35 @@ VALUES
 ON CONFLICT (user_id) DO NOTHING;
 
 -- ── 2. Training Providers ───────────────────────────────────
-INSERT INTO training_providers (provider_id, institution_name, institution_type, classification, school_id, complete_address, contact_number, status)
+INSERT INTO training_providers (
+  provider_id, institution_name, email_website_fb, institution_type, classification,
+  type_of_program, sector, qualification_title, training_duration_hours, sil_duration_hours,
+  program_registration_number, date_validity, school_id, complete_address, contact_number, status
+)
 VALUES
   ('b0000000-0000-0000-0000-000000000001',
-   'Davao Technical Skills Institute',
-   'TVI', 'Private', 'DTSI-2024-001',
-   '123 Bonifacio St., Poblacion District, Davao City 8000',
-   '(082) 555-0101', 'active'),
+   'Davao Technical Skills Institute', 'dtsi.edu.ph@gmail.com / fb.com/dtsi',
+   'TVI', 'Private', 'WTR', 'Information and Communications Technology (ICT)',
+   'Computer Systems Servicing NC II', 280, 100, 'WTR-2024-00142', '2028-12-31',
+   'DTSI-2024-001', '123 Bonifacio St., Poblacion District, Davao City 8000', '(082) 555-0101', 'active'),
 
   ('b0000000-0000-0000-0000-000000000002',
-   'Mindanao Polytechnic College',
-   'HEI', 'Public', 'MPC-2024-002',
-   '456 Rizal Ave., Buhangin, Davao City 8000',
-   '(082) 555-0202', 'active'),
+   'Mindanao Polytechnic College', 'mpc.davao@edu.ph',
+   'HEI', 'Public', 'WTR', 'Construction and Building Works',
+   'Shielded Metal Arc Welding (SMAW) NC II', 268, 80, 'WTR-2024-00189', '2027-10-15',
+   'MPC-2024-002', '456 Rizal Ave., Buhangin, Davao City 8000', '(082) 555-0202', 'active'),
 
   ('b0000000-0000-0000-0000-000000000003',
-   'Southern Philippines Vocational Academy',
-   'TVI', 'Private', 'SPVA-2024-003',
-   '789 Mabini Rd., Toril, Davao City 8000',
-   '(082) 555-0303', 'active'),
+   'Southern Philippines Vocational Academy', 'spva.toril@gmail.com',
+   'TVI', 'Private', 'WTR', 'Tourism / Hospitality',
+   'Cookery NC II', 316, 120, 'WTR-2024-00205', '2028-06-30',
+   'SPVA-2024-003', '789 Mabini Rd., Toril, Davao City 8000', '(082) 555-0303', 'active'),
 
   ('b0000000-0000-0000-0000-000000000004',
-   'Ateneo de Davao Training Center',
-   'HEI', 'Private', 'ADTC-2024-004',
-   '321 Jacinto St., Poblacion District, Davao City 8000',
-   '(082) 555-0404', 'inactive')
+   'Ateneo de Davao Training Center', 'addu.training@addu.edu.ph',
+   'HEI', 'Private', 'NTR', 'Automotive and Land Transportation',
+   'Automotive Servicing NC II', 524, 160, 'NTR-2024-00311', '2026-11-30',
+   'ADTC-2024-004', '321 Jacinto St., Poblacion District, Davao City 8000', '(082) 555-0404', 'inactive')
 ON CONFLICT (provider_id) DO NOTHING;
 
 -- ── 3. Scholarship Programs ────────────────────────────────
